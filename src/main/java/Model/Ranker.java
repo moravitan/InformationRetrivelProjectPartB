@@ -21,7 +21,6 @@ public class Ranker {
         this.posting = new HashMap<>();
         this.ranksPerDocument = new TreeMap<>();
         if(cities != null && cities.size() > 0)
-        if(cities != null && cities.size() > 0)
             getCitiesDocuments(cities);
         getTermsPosting(termsForQueries);
         try {
