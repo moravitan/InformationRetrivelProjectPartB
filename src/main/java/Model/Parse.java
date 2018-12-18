@@ -15,7 +15,7 @@ public class Parse {
     Stemmer stemmer;
     HashMap <String, Integer> termsMapPerDocument; // <Term, TF>
     // CHANGED HERE
-    TreeMap<Integer,String> topFiveEntities;
+    TreeMap<Integer,String> topFiveEntities; // <tf, Term>
     ///////////////
     HashMap<String, ArrayList<Integer>> citiesMap; // <CityName, listOfPositions>
     HashMap<String,String> monthDictionary;
