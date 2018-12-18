@@ -28,7 +28,7 @@ public class Searcher {
        this.query = new HashMap<>();
         parse.parsing("111",query,false);
         this.query = parse.getTermsMapPerDocument();
-       // ranker.rank(query, cities, "111");
+        ranker.rank(this.query, cities, "111");
         return result;
 
     }
