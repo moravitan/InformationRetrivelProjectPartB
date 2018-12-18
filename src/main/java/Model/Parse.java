@@ -33,7 +33,7 @@ public class Parse {
     // counter for the number of words in the document
     int length = 0;
     // counter for the number of documents has been parsed
-    int numberOfDocuments = 0;
+    public static int numberOfDocuments = 0;
     // docId of the current doc being parsed.
     String docId;
 

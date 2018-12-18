@@ -30,6 +30,8 @@ public class Indexer {
     // path to save all the files created in this class
     int numberOfTerms;
     String pathToSaveIndex;
+    // total length of all files
+    long totalLength;
 
     /**
      *
@@ -248,10 +250,26 @@ public class Indexer {
         thread4.join();
         ReadFile.mapOfDocs.clear();
         ReadFile.stopWords.clear();
+        createDocumentDetailsFile();
 
 
 
     }
+
+    /**
+     * This method create file to save the number of document in the corpus and their average length
+     */
+    private void createDocumentDetailsFile() {
+        try {
+            FileWriter writer = new FileWriter(pathToSaveIndex + "\\DetailsForRank.txt");
+            long averageLengthOfDocuments = totalLength/Parse.numberOfDocuments;
+            writer.write(Parse.numberOfDocuments + "," + averageLengthOfDocuments);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
     /**
      * This method write the content of the read file document map to the disk each 5000 documents
      * doc details written to file in this format:
@@ -264,15 +282,15 @@ public class Indexer {
                 file.createNewFile();
             BufferedWriter writer = new BufferedWriter(new FileWriter(file,true));
             for (Map.Entry<String,DocumentDetails> entry : ReadFile.mapOfDocs.entrySet()){
-                // docId,fileName,language,date,numberOfDistinctWords,max term frequency,{term1:tf1,term2:tf2,...,term5:tf5,}
-                writer.write(entry.getKey() + "," + entry.getValue().fileName + "," +
+                // docId, length, fileName,language,date,numberOfDistinctWords,max term frequency,{term1:tf1,term2:tf2,...,term5:tf5,}
+                writer.write(entry.getKey() + "," + entry.getValue().getLength() + "," + entry.getValue().fileName + "," +
                         entry.getValue().getLanguage() + "," + entry.getValue().getDate() + "," +
-                        entry.getValue().getLength() + "," +
                         entry.getValue().getNumberOfDistinctWords() + "," + entry.getValue().getMaxTermFrequency() + ",");
                 writer.write("{");
                 for (Map.Entry<Integer,String> entry1:entry.getValue().getTopFiveEntities().entrySet()){
                     writer.write(entry1.getValue() + ":" + entry1.getKey() + ",");
                 }
+                totalLength+=entry.getValue().getLength();
                 writer.write("}");
                 writer.write("\n");
             }
@@ -339,7 +357,7 @@ public class Indexer {
             writer.write(key + " ");
             for (PostingDetails postingDetails: entry) {
                 // write doc detailed for each document in the format: doc_Id, TF
-                writer.write("<" + postingDetails.getDocId() + " " + postingDetails.getTF() + ">");
+                writer.write("<" + postingDetails.getDocId() + "," + postingDetails.getTF() + ">");
             }
             writer.write("\n");
         } catch (IOException e) {
