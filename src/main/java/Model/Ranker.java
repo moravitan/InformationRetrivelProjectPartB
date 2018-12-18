@@ -10,16 +10,17 @@ import java.util.*;
 public class Ranker {
 
     private HashSet<String> cityDocuments;
-    private HashMap<String, ArrayList<TermRankDetails>> posting; // <Term, docId,tf>
+    private HashMap<String, ArrayList<TermRankDetails>> posting; // <docId, term,tf>
     private TreeMap<String,Double> ranksPerDocument; // <docId,rank>
 
 
 
 
-    public void rank(HashMap<String,Integer> termsForQueries, HashSet<String> cities){
+    public void rank(HashMap<String,Integer> termsForQueries, HashSet<String> cities, String queryId){
         this.cityDocuments = new HashSet<>();
         this.posting = new HashMap<>();
         this.ranksPerDocument = new TreeMap<>();
+        if(cities != null && cities.size() > 0)
         if(cities != null && cities.size() > 0)
             getCitiesDocuments(cities);
         getTermsPosting(termsForQueries);
@@ -31,18 +32,20 @@ public class Ranker {
             int averageLength = Integer.valueOf(lineDetails[1]);
             bf.close();
             calculateBM25(termsForQueries,numberOfDocuments,averageLength);
-//            HashMap<String,Double> rankFinal = sortByValue(ranksPerDocument);
+            // sort rank result in desanding  order
             HashMap<String,Double> rankFinal = new HashMap<>();
             rankFinal.entrySet().stream().sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
                     .forEachOrdered(x -> ranksPerDocument.put(x.getKey(), x.getValue()));
             int counter = 0;
+            Vector result = new Vector();
+            // get the 50 documents with the highest rank
             for(Map.Entry<String,Double> entry: rankFinal.entrySet()){
                 if (counter == 50)
                     break;
-                // fill searcher map
-
+                result.add(entry.getKey());
                 counter++;
             }
+
 
         } catch (IOException e) {
             e.printStackTrace();
