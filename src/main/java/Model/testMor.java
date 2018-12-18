@@ -1,30 +1,20 @@
 package Model;
 
-import java.util.Comparator;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.HashMap;
 
 public class testMor {
 
     public static void main(String[] args) {
-        TreeMap<Integer,String> topFiveEntities = new TreeMap<>(new Comparator<Integer>() {
-            @Override
-            public int compare(Integer o1, Integer o2) {
-                return o2.compareTo(o1);
-            }
-        });
-        topFiveEntities.put(4,"sfs");
-        topFiveEntities.put(3,"sfs");
+        String line = "sdfsdfds,12";
+        String docId = line.substring(0,line.indexOf(","));
+        line = line.substring(line.indexOf(","));
+        int docLength = Integer.valueOf(line.substring(line.indexOf(",") + 1));
+        System.out.println(docLength);
 
+    }
 
-        for (Map.Entry<Integer,String> entry: topFiveEntities.entrySet()){
-            if (entry.getKey() == 3)
-                topFiveEntities.remove(3);
+    public static void test(HashMap<String,Integer> hashMap){
+        hashMap.put("aa",2);
 
-        }
-        for (Map.Entry<Integer,String> entry: topFiveEntities.entrySet()){
-            System.out.println(entry.getKey() + "," + entry.getValue());
-
-        }
     }
 }

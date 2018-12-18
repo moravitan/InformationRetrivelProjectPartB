@@ -13,8 +13,8 @@ public class Engine {
     private ReadFile readFile;
     private Parse parse;
     private Indexer indexer;
-    private HashMap<String,TermDetails> dictionary;// <Term, df, totalTF, ptr>
-    private String pathToSaveIndex;
+    public static HashMap<String,TermDetails> dictionary;// <Term, df, totalTF, ptr>
+    public static String pathToSaveIndex;
 
 
 
