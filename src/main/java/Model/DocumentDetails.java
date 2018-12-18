@@ -12,6 +12,7 @@ public class DocumentDetails {
     String date;
     int maxTermFrequency;
     int numberOfDistinctWords;
+    int length;
     TreeMap<Integer,String> topFiveEntities;
 
 
@@ -54,6 +55,11 @@ public class DocumentDetails {
     public TreeMap<Integer, String> getTopFiveEntities() {
         return topFiveEntities;
     }
+
+    public int getLength() {
+        return length;
+    }
+
     //</editor-fold>
 
 
@@ -75,6 +81,10 @@ public class DocumentDetails {
 
     public void setTopFiveEntities(TreeMap<Integer, String> topFiveEntities) {
         this.topFiveEntities = topFiveEntities;
+    }
+
+    public void setLength(int length) {
+        this.length = length;
     }
     //</editor-fold>
 }

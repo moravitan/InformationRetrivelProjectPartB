@@ -30,6 +30,8 @@ public class Parse {
     int numberOfDistinctWords = 0;
     // counter for the position of the word in the document being parsed
     int position = -1;
+    // counter for the number of words in the document
+    int length = 0;
     // counter for the number of documents has been parsed
     int numberOfDocuments = 0;
     // docId of the current doc being parsed.
@@ -173,6 +175,7 @@ public class Parse {
             // update and reset all the parameters of the current document
             ReadFile.mapOfDocs.get(docId).setMaxTermFrequency(maxTermFrequency);
             ReadFile.mapOfDocs.get(docId).setNumberOfDistinctWords(numberOfDistinctWords);
+            ReadFile.mapOfDocs.get(docId).setLength(length);
             ////////CHANGED HERE
             ReadFile.mapOfDocs.get(docId).setTopFiveEntities(topFiveEntities);
             /////////////
@@ -180,7 +183,8 @@ public class Parse {
         }
         maxTermFrequency = 0;
         numberOfDistinctWords = 0;
-        this.position = -1;
+        position = -1;
+        length = 0;
         termsMapPerDocument = new HashMap<>();
         citiesMap = new HashMap<>();
         topFiveEntities = new TreeMap<>();
@@ -279,6 +283,7 @@ public class Parse {
                     int currentNumOfAppearance = termsMapPerDocument.get(wordsInDoc[i].toUpperCase());
                     termsMapPerDocument.put(wordsInDoc[i].toLowerCase(),currentNumOfAppearance + 1);
                     termsMapPerDocument.remove(wordsInDoc[i].toUpperCase());
+                    length++;
 //                    if (termsMapPerDocument.get(wordsInDoc[i]).containsKey(documentDetails))
 //                        currentNumOfAppearance = (termsMapPerDocument.get(wordsInDoc[i])).get(documentDetails);
 //                    if (currentNumOfAppearance > maxTermFrequency)
@@ -946,6 +951,7 @@ public class Parse {
      * @param key - the countryName of city under tag <F P=104>
      */
     private void updateTerm(String key){
+        length++;
         if (isStemming)
             key = stemmer.setTerm(key);
         //check if term not exist in dictionary , add key to TreeMapDic and create it's dic of docs

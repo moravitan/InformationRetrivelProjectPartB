@@ -267,6 +267,7 @@ public class Indexer {
                 // docId,fileName,language,date,numberOfDistinctWords,max term frequency,{term1:tf1,term2:tf2,...,term5:tf5,}
                 writer.write(entry.getKey() + "," + entry.getValue().fileName + "," +
                         entry.getValue().getLanguage() + "," + entry.getValue().getDate() + "," +
+                        entry.getValue().getLength() + "," +
                         entry.getValue().getNumberOfDistinctWords() + "," + entry.getValue().getMaxTermFrequency() + ",");
                 writer.write("{");
                 for (Map.Entry<Integer,String> entry1:entry.getValue().getTopFiveEntities().entrySet()){
