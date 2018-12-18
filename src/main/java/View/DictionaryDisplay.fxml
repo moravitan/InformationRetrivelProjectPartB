@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane prefHeight="560.0" prefWidth="350.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="View.DictionaryDisplay">
+   <children>
+      <Label layoutX="40.0" layoutY="20.0" prefHeight="46.0" prefWidth="259.0" text="The Dictionary">
+         <font>
+            <Font name="Candara Bold" size="40.0" />
+         </font>
+      </Label>
+      <ScrollPane layoutY="106.0" prefHeight="459.0" prefWidth="356.0">
+         <content>
+            <ListView fx:id="lv_dictionaryDisplay" prefHeight="458.0" prefWidth="353.0" />
+         </content>
+      </ScrollPane>
+      <Label layoutY="86.0" text="Term, number of appearances">
+         <font>
+            <Font size="14.0" />
+         </font>
+      </Label>
+   </children>
+</AnchorPane>
