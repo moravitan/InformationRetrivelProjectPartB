@@ -22,14 +22,14 @@ public class Indexer {
     // index for number of posting file has been created
     int numOfPosting;
     File folder;
-    private Vector<File> numbersPosting;
-    private Vector<File> upperPosting;
-    private Vector<File> lowerPosting;
-    private Vector<File> cityPosting;
+    Vector<File> numbersPosting;
+    Vector<File> upperPosting;
+    Vector<File> lowerPosting;
+    Vector<File> cityPosting;
     ThreadPoolExecutor threadPoolExecutor;
     // path to save all the files created in this class
-    private int numberOfTerms;
-    public static String pathToSaveIndex;
+    int numberOfTerms;
+    String pathToSaveIndex;
 
     /**
      *
