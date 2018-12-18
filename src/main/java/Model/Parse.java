@@ -274,15 +274,17 @@ public class Parse {
 
                 //WORD starts with LOWER and exist in dic with UPPER, update dic with LOWER CASE of WORD and update key to LOWER
                 if (!Character.isUpperCase(wordsInDoc[i].charAt(0)) && termsMapPerDocument.containsKey(wordsInDoc[i].toUpperCase())) {
-                    updateTerm(wordsInDoc[i]);
-/*                    termsMapPerDocument.get(wordsInDoc[i]).putAll(termsMapPerDocument.get(wordsInDoc[i].toUpperCase()));
-                    int currentNumOfAppearance = 0;
-                    if (termsMapPerDocument.get(wordsInDoc[i]).containsKey(documentDetails))
-                        currentNumOfAppearance = (termsMapPerDocument.get(wordsInDoc[i])).get(documentDetails);
-                    if (currentNumOfAppearance > maxTermFrequency)
-                        maxTermFrequency = currentNumOfAppearance;
-                    (termsMapPerDocument.get(wordsInDoc[i])).put(documentDetails, currentNumOfAppearance + 1);
-                    termsMapPerDocument.remove(wordsInDoc[i].toUpperCase());*/
+//                    updateTerm(wordsInDoc[i]);
+//                    termsMapPerDocument.get(wordsInDoc[i]).putAll(termsMapPerDocument.get(wordsInDoc[i].toUpperCase()));
+                    int currentNumOfAppearance = termsMapPerDocument.get(wordsInDoc[i].toUpperCase());
+                    termsMapPerDocument.put(wordsInDoc[i].toLowerCase(),currentNumOfAppearance + 1);
+                    termsMapPerDocument.remove(wordsInDoc[i].toUpperCase());
+//                    if (termsMapPerDocument.get(wordsInDoc[i]).containsKey(documentDetails))
+//                        currentNumOfAppearance = (termsMapPerDocument.get(wordsInDoc[i])).get(documentDetails);
+//                    if (currentNumOfAppearance > maxTermFrequency)
+//                        maxTermFrequency = currentNumOfAppearance;
+//                    (termsMapPerDocument.get(wordsInDoc[i])).put(documentDetails, currentNumOfAppearance + 1);
+//                    termsMapPerDocument.remove(wordsInDoc[i].toUpperCase());
                     continue;
                 }
 
@@ -986,6 +988,7 @@ public class Parse {
             int needToDelete = 0;
             for(Map.Entry<Integer,String> entry : topFiveEntities.entrySet()){
                 // if the new tf is bigger from one of the keys in the topFiveEntities dictionary
+                // save the key in a temporary parameter
                 if (entry.getKey() < tf){
                     needToDelete = entry.getKey();
                 }

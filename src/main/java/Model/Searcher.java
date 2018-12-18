@@ -1,15 +1,25 @@
 package Model;
 
 import java.io.File;
+import java.util.HashSet;
 
 public class Searcher {
 
 
-    public void read(String query){
+    /**
+     * @param query
+     * @param cities
+     */
+    public void read(String query, HashSet<String> cities){
 
     }
 
-    public void read(File file){
+    /**
+     *
+     * @param file
+     * @param cities
+     */
+    public void read(File file, HashSet<String> cities){
 
     }
 }

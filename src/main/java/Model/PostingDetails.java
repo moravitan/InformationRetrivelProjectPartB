@@ -4,8 +4,6 @@ public class PostingDetails {
 
     private String docId;
     private int TF;
-    // normalized tf
-    private int normalizedTf;
 
     public PostingDetails(String docId, int TF) {
         this.docId = docId;

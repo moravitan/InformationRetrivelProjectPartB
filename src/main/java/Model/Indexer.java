@@ -14,14 +14,14 @@ import java.util.concurrent.ThreadPoolExecutor;
 public class Indexer {
 
     public static HashMap<String,TermDetails> dictionary = new HashMap<>(); // <Term, df, totalTF, ptr>
-    public static HashMap<String, ArrayList<PostingDetails>> posting = new HashMap<>(); // <Term, doc_id,TF>
-    public static HashMap <String,CityDetails> citiesDictionary = new HashMap<>(); // <CityName, countryName, currency, populationSize>
-    public static HashMap <String, StringBuilder> citiesPosting  = new HashMap<>(); // <CityName, doc_id, positionListToString>
+    HashMap<String, ArrayList<PostingDetails>> posting = new HashMap<>(); // <Term, doc_id,TF>
+    HashMap <String,CityDetails> citiesDictionary = new HashMap<>(); // <CityName, countryName, currency, populationSize>
+    HashMap <String, StringBuilder> citiesPosting  = new HashMap<>(); // <CityName, doc_id, positionListToString>
     // size of posting map
-    public int numDocInPosting;
+    int numDocInPosting;
     // index for number of posting file has been created
-    public int numOfPosting;
-    public File folder;
+    int numOfPosting;
+    File folder;
     private Vector<File> numbersPosting;
     private Vector<File> upperPosting;
     private Vector<File> lowerPosting;
