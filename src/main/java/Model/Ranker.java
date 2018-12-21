@@ -6,21 +6,21 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Ranker {
 
     private HashSet<String> cityDocuments;
-    private HashMap<String, ArrayList<TermRankDetails>> posting; // <Term, docId,tf>
+    private HashMap<String, ArrayList<TermRankDetails>> posting; // <docId, term,tf>
     private TreeMap<String,Double> ranksPerDocument; // <docId,rank>
 
 
 
 
-    public void rank(HashMap<String,Integer> termsForQueries, HashSet<String> cities){
-        this.cityDocuments = new HashSet<>();
+    public void rank(HashMap<String,Integer> termsForQueries, HashSet<String> cities, String queryId){
         this.posting = new HashMap<>();
         this.ranksPerDocument = new TreeMap<>();
-        if(cities != null && cities.size() > 0)
+        if(cities.size() > 0)
             getCitiesDocuments(cities);
         getTermsPosting(termsForQueries);
         try {
@@ -31,19 +31,25 @@ public class Ranker {
             int averageLength = Integer.valueOf(lineDetails[1]);
             bf.close();
             calculateBM25(termsForQueries,numberOfDocuments,averageLength);
-//            HashMap<String,Double> rankFinal = sortByValue(ranksPerDocument);
-            HashMap<String,Double> rankFinal = new HashMap<>();
-            rankFinal.entrySet().stream().sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
-                    .forEachOrdered(x -> ranksPerDocument.put(x.getKey(), x.getValue()));
+            // sort rank result in desanding  order
+            //HashMap<String,Double> rankFinal = new HashMap<>(ranksPerDocument);
+            //rankFinal.entrySet().stream().sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+            //        .forEachOrdered(x -> ranksPerDocument.put(x.getKey(), x.getValue()));
+            HashMap<String,Double> rankFinal = ranksPerDocument.entrySet()
+                    .stream()
+                    .sorted((Map.Entry.<String, Double>comparingByValue().reversed()))
+                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
             int counter = 0;
+            Vector result = new Vector();
+            // get the 50 documents with the highest rank
             for(Map.Entry<String,Double> entry: rankFinal.entrySet()){
                 if (counter == 50)
                     break;
-                // fill searcher map
-
+                result.add(entry.getKey());
                 counter++;
             }
-
+            // update search map in the rank result
+            Searcher.result.put(Integer.valueOf(queryId),result);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -57,6 +63,7 @@ public class Ranker {
      * @param cities
      */
     private void getCitiesDocuments(HashSet<String> cities){
+        this.cityDocuments = new HashSet<>();
         try {
             HashSet<Integer> pointers = new HashSet<>();
             BufferedReader bf = new BufferedReader(new FileReader(Engine.pathToSaveIndex + "\\cityDictionary"));
@@ -104,29 +111,31 @@ public class Ranker {
                 int lineNumber = 0;
                 while(true){
                     if (lineNumber == ptr){
-                        ArrayList<TermRankDetails> list = new ArrayList<>();
                         while (line.length() > 0){
                             // get the doc id
                             String docId = StringUtils.substringBetween(line,"<",",");
-                            if (cityDocuments.contains(docId)){
+                            if (cityDocuments == null || cityDocuments.contains(docId)){
                                 // get the tf of the term in the document
                                 String tf = StringUtils.substringBetween(line,",",">");
                                 int numberTF = Integer.valueOf(tf);
-                                TermRankDetails termRankDetails = new TermRankDetails(docId,numberTF);
-                                list.add(termRankDetails);
+                                TermRankDetails termRankDetails = new TermRankDetails(entry.getKey(),numberTF);
+                                if (!posting.containsKey(docId)){
+                                    ArrayList<TermRankDetails> list = new ArrayList<>();
+                                    list.add(termRankDetails);
+                                    posting.put(docId,list);
+                                }
+                                else
+                                    posting.get(docId).add(termRankDetails);
                             }
-                            line = line.substring(line.indexOf(">") + 1);
+                            line = line.substring(line.indexOf(">") + 1).trim();
                         }
-                        if (!posting.containsKey(entry.getKey()))
-                            posting.put(entry.getKey(),list);
-                        else
-                            posting.get(entry.getKey()).addAll(list);
+                        bf.close();
                         break;
                     }
                     line = bf.readLine();
                     lineNumber++;
                 }
-                bf.close();
+
             }
         }
         catch (IOException e) {
@@ -148,12 +157,14 @@ public class Ranker {
                     String docId = line.substring(0,line.indexOf(","));
                     line = line.substring(line.indexOf(","));
                     if (docId.equals(entry.getKey())){
-                        docLength = Integer.valueOf(line.substring(line.indexOf(",") + 1));
+                        docLength = Integer.valueOf(StringUtils.substringBetween(line,",",","));
+                        break;
                     }
+                    line = bf.readLine();
                 }
                 // for each term in the document
                 for (TermRankDetails termRankDetails:entry.getValue()) {
-                    double partA = termsForQueries.get(entry.getKey());
+                    double partA = termsForQueries.get(termRankDetails.getTerm());
                     double partB = ((k+1) * termRankDetails.getTF());
                     double partC = termRankDetails.getTF()+ k * (1-b + b *(docLength/averageLength));
                     double partD = Math.log((numberOfDocumets + 1)/ (double) Engine.dictionary.get(termRankDetails.getTerm()).getDocumentFrequency());
