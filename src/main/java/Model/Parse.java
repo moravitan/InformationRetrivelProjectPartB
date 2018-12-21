@@ -253,7 +253,7 @@ public class Parse {
             // like (WORD)
             if (wordsInDoc[i].startsWith("(") || wordsInDoc[i].startsWith("["))
                 wordsInDoc[i] = wordsInDoc[i].substring(1);
-            if (wordsInDoc[i].endsWith(")") || wordsInDoc[i].endsWith("]") || wordsInDoc[i].endsWith(":"))
+            if (wordsInDoc[i].endsWith(")") || wordsInDoc[i].endsWith("]") || wordsInDoc[i].endsWith(":") || wordsInDoc[i].endsWith("'"))
                 wordsInDoc[i] = wordsInDoc[i].substring(0,wordsInDoc[i].length() - 1);
 
             if (wordsInDoc[i].length() == 0)

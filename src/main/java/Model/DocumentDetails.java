@@ -7,13 +7,13 @@ import java.util.TreeMap;
  */
 public class DocumentDetails {
 
-    String fileName;
-    String language;
-    String date;
-    int maxTermFrequency;
-    int numberOfDistinctWords;
-    int length;
-    TreeMap<Integer,String> topFiveEntities;
+    private String fileName;
+    private String language;
+    private String date;
+    private int maxTermFrequency;
+    private int numberOfDistinctWords;
+    private int length;
+    private TreeMap<Integer,String> topFiveEntities;
 
 
 

@@ -95,6 +95,6 @@ public class Model extends Observable {
     }
 
     public TreeSet<String> readDocumentsLanguages() {
-        return engine.readDocumentsLanguages();
+        return engine.readDocumentsCities();
     }
 }

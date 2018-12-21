@@ -291,15 +291,15 @@ public class Indexer {
             BufferedWriter writer = new BufferedWriter(new FileWriter(file,true));
             for (Map.Entry<String,DocumentDetails> entry : ReadFile.mapOfDocs.entrySet()){
                 // docId, length, fileName,language,date,numberOfDistinctWords,max term frequency,{term1:tf1,term2:tf2,...,term5:tf5,}
-                writer.write(entry.getKey() + "," + entry.getValue().getLength() + "," + entry.getValue().fileName + "," +
+                writer.write(entry.getKey() + "," + entry.getValue().getLength() + "," + entry.getValue().getFileName() + "," +
                         entry.getValue().getLanguage() + "," + entry.getValue().getDate() + "," +
                         entry.getValue().getNumberOfDistinctWords() + "," + entry.getValue().getMaxTermFrequency() + ",");
-                writer.write("{");
+/*                writer.write("{");
                 for (Map.Entry<Integer,String> entry1:entry.getValue().getTopFiveEntities().entrySet()){
                     writer.write(entry1.getValue() + ":" + entry1.getKey() + ",");
-                }
+                }*/
                 totalLength+=entry.getValue().getLength();
-                writer.write("}");
+//                writer.write("}");
                 writer.write("\n");
             }
             writer.flush();

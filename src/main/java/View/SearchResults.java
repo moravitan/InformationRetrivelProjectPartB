@@ -28,9 +28,11 @@ public class SearchResults  extends View{
 
     private void setResult() {
         for(Map.Entry<Integer,Vector<String>> entry: View.result.entrySet()){
+            resultList.getItems().add("result for: " + entry.getKey());
             ObservableList<String> dictionaryObservable = FXCollections.observableArrayList(entry.getValue());
-            for(String str : dictionaryObservable )
+            for(String str : dictionaryObservable)
                 resultList.getItems().add(str);
+
         }
     }
 

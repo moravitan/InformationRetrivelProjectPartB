@@ -108,7 +108,10 @@ public class View implements Observer {
         else {
             controller.setIsStemming(cb_stemming.isSelected());
             result = controller.processQuery(singleQuery.getText(), cities);
-            newStage("SearchResults.fxml", "", searchResults, 281, 400, controller);
+            if (result.size() == 0)
+                alert("Sorry, but we couldn't find results for your search", Alert.AlertType.INFORMATION);
+            else
+                newStage("SearchResults.fxml", "", searchResults, 281, 400, controller);
         }
     }
 
@@ -121,7 +124,10 @@ public class View implements Observer {
             alert("You did not enter any path", Alert.AlertType.ERROR);
         else {
             result = controller.processQueryFile(new File(pathToQueriesFile.getText()), cities);
-            newStage("SearchResults.fxml", "", searchResults, 281, 400, controller);
+            if (result.size() == 0)
+                alert("Sorry, but we couldn't find results for your search", Alert.AlertType.INFORMATION);
+            else
+                newStage("SearchResults.fxml", "", searchResults, 281, 400, controller);
 
         }
     }
@@ -152,25 +158,35 @@ public class View implements Observer {
         }
     }
 
+    /**
+     * This method load the dictionary file from the pathToIndexDirectory directory into a hash map
+     * @param actionEvent
+     */
     public void loadDictionary(ActionEvent actionEvent) {
-        controller.setIsStemming(cb_stemming.isSelected());
-        controller.setPathToSaveIndex(pathToIndexDirectory.getText());
-        controller.uploadDictionaryToMem();
-        alert("The dictionary have been uploaded to memory." , Alert.AlertType.INFORMATION);
-        btn_loadQuery.setDisable(false);
-        btn_searchSingleQuery.setDisable(false);
-        btn_searchMultiQueries.setDisable(false);
-        // set corpus cities
-        ObservableList<String> corpusCities = controller.readDocumentsLanguages();
-        org.controlsfx.control.CheckComboBox<String> checkComboBox = new CheckComboBox<String>(corpusCities);
-        vb_cities.getChildren().clear();
-        vb_cities.getChildren().addAll(checkComboBox);
-        // when a city has been checked add it to hash set
-        checkComboBox.getCheckModel().getCheckedItems().addListener(new ListChangeListener<String>() {
-            public void onChanged(ListChangeListener.Change<? extends String> c) {
-                cities.add(checkComboBox.getCheckModel().getCheckedItems().toString());
-            }
-        });
+        if (pathToIndexDirectory.getText().length() > 0) {
+            controller.setIsStemming(cb_stemming.isSelected());
+            controller.setPathToSaveIndex(pathToIndexDirectory.getText());
+            controller.uploadDictionaryToMem();
+            alert("The dictionary have been uploaded to memory.", Alert.AlertType.INFORMATION);
+            btn_loadQuery.setDisable(false);
+            btn_searchSingleQuery.setDisable(false);
+            btn_searchMultiQueries.setDisable(false);
+            // set corpus cities
+            ObservableList<String> corpusCities = controller.readDocumentsLanguages();
+            org.controlsfx.control.CheckComboBox<String> checkComboBox = new CheckComboBox<String>(corpusCities);
+            vb_cities.getChildren().clear();
+            vb_cities.getChildren().addAll(checkComboBox);
+            // when a city has been checked add it to hash set
+            checkComboBox.getCheckModel().getCheckedItems().addListener(new ListChangeListener<String>() {
+                public void onChanged(ListChangeListener.Change<? extends String> c) {
+                    cities.add(checkComboBox.getCheckModel().getCheckedItems().toString());
+                }
+            });
+        }
+        else{
+            alert("Please enter a path to your index directory", Alert.AlertType.ERROR);
+
+        }
     }
 
     /**

@@ -104,7 +104,17 @@ public class Ranker {
     private void getTermsPosting(HashMap<String,Integer> termsForQueries){
         try {
             for (Map.Entry<String, Integer> entry : termsForQueries.entrySet()) {
-                int ptr = Engine.dictionary.get(entry.getKey()).getPtr();
+                int ptr = 0;
+                String key = entry.getKey();
+                if(Engine.dictionary.containsKey(entry.getKey().toUpperCase())) {
+                    ptr = Engine.dictionary.get(entry.getKey().toUpperCase()).getPtr();
+                    key = key.toUpperCase();
+                }
+                else if (Engine.dictionary.containsKey(entry.getKey().toLowerCase())) {
+                    ptr = Engine.dictionary.get(entry.getKey().toLowerCase()).getPtr();
+                    key = key.toLowerCase();
+                }
+                else continue;
                 char c = Character.toUpperCase(entry.getKey().charAt(0));
                 BufferedReader bf = new BufferedReader(new FileReader(Engine.pathToSaveIndex + "\\posting" + c + ".txt"));
                 String line = bf.readLine();
@@ -118,7 +128,7 @@ public class Ranker {
                                 // get the tf of the term in the document
                                 String tf = StringUtils.substringBetween(line,",",">");
                                 int numberTF = Integer.valueOf(tf);
-                                TermRankDetails termRankDetails = new TermRankDetails(entry.getKey(),numberTF);
+                                TermRankDetails termRankDetails = new TermRankDetails(key,numberTF);
                                 if (!posting.containsKey(docId)){
                                     ArrayList<TermRankDetails> list = new ArrayList<>();
                                     list.add(termRankDetails);
@@ -149,8 +159,8 @@ public class Ranker {
         double b = 0.75;
         // for each document in posting
         for (Map.Entry<String,ArrayList<TermRankDetails>> entry:posting.entrySet()){
-            try {
-                BufferedReader bf = new BufferedReader(new FileReader(Engine.pathToSaveIndex + "\\documentsDetails.txt"));
+//            try {
+/*                BufferedReader bf = new BufferedReader(new FileReader(Engine.pathToSaveIndex + "\\documentsDetails.txt"));
                 double docLength = 0;
                 String line = bf.readLine();
                 while (line != null){
@@ -161,19 +171,24 @@ public class Ranker {
                         break;
                     }
                     line = bf.readLine();
-                }
+                }*/
+                double docLength = Engine.mapOfDocs.get(entry.getKey()).getLength();
                 // for each term in the document
                 for (TermRankDetails termRankDetails:entry.getValue()) {
-                    double partA = termsForQueries.get(termRankDetails.getTerm());
+                    double partA = 0.0;
+                    if (termsForQueries.containsKey(termRankDetails.getTerm().toLowerCase()))
+                        partA = termsForQueries.get(termRankDetails.getTerm().toLowerCase());
+                    else
+                        partA = termsForQueries.get(termRankDetails.getTerm().toUpperCase());
                     double partB = ((k+1) * termRankDetails.getTF());
                     double partC = termRankDetails.getTF()+ k * (1-b + b *(docLength/averageLength));
                     double partD = Math.log((numberOfDocumets + 1)/ (double) Engine.dictionary.get(termRankDetails.getTerm()).getDocumentFrequency());
                     rank = rank + (partA * (partB/partC) * partD);
                 }
                 ranksPerDocument.put(entry.getKey(),rank);
-            } catch (IOException e) {
+/*            } catch (IOException e) {
                 e.printStackTrace();
-            }
+            }*/
 
 
         }

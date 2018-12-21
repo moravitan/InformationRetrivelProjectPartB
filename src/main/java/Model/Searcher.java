@@ -56,12 +56,14 @@ public class Searcher {
                     id = st.substring(14, 17);
                 }
                 if (st.contains("<title> ")){
-                    queryContent = st.substring(8);
+                    queryContent = st.substring(8).replaceAll("\\s+$","");
                 }
                 if (!id.equals("") && !queryContent.equals("")) {
                     parse.parsing(id, queryContent, false);
                     query = parse.getTermsMapPerDocument();
-                    // ranker.rank(query, cities, id);
+                    ranker.rank(query, cities, id);
+                    id = "";
+                    queryContent = "";
                 }
 
             }

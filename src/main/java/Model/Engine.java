@@ -15,6 +15,7 @@ public class Engine {
     private Searcher searcher;
     private Boolean isStemming;
     public static HashMap<String,TermDetails> dictionary;// <Term, df, totalTF, ptr>
+    public static HashMap<String,DocumentDetails> mapOfDocs = new HashMap<>();
     public static String pathToSaveIndex;
 
     public Engine() {
@@ -75,6 +76,7 @@ public class Engine {
                 line = bf.readLine();
             }
             bf.close();
+            setDocumentDetails();
         } catch (IOException e) { }
     }
 
@@ -135,7 +137,7 @@ public class Engine {
         parse.setStemming(stemming);
     }
 
-    public TreeSet<String> readDocumentsLanguages() {
+    public TreeSet<String> readDocumentsCities() {
         TreeSet cities = new TreeSet();
         try{
             File dictionaryFile = new File(pathToSaveIndex + "\\cityDictionary.txt");
@@ -149,5 +151,24 @@ public class Engine {
             bf.close();
         } catch (IOException e) { }
         return cities;
+    }
+
+    public void setDocumentDetails(){
+        try{
+            File dictionaryFile = new File(pathToSaveIndex + "\\documentsDetails.txt");
+            BufferedReader bf = new BufferedReader(new FileReader(dictionaryFile));
+            String line = bf.readLine();
+            while (line != null){
+                // docId, length, fileName,language,date,numberOfDistinctWords,max term frequency,{term1:tf1,term2:tf2,...,term5:tf5,}
+                String [] details = line.split(",");
+                DocumentDetails documentDetails = new DocumentDetails(details[2],details[4],details[3]);
+                documentDetails.setLength(Integer.valueOf(details[1]));
+                documentDetails.setNumberOfDistinctWords(Integer.valueOf(details[5]));
+                documentDetails.setMaxTermFrequency(Integer.valueOf(details[6]));
+                mapOfDocs.put(details[0], documentDetails);
+                line = bf.readLine();
+            }
+            bf.close();
+        } catch (IOException e) { }
     }
 }
