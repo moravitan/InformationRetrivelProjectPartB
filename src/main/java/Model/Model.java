@@ -1,8 +1,8 @@
 package Model;
 
 
-import java.util.Observable;
-import java.util.TreeSet;
+import java.io.File;
+import java.util.*;
 
 public class Model extends Observable {
     private ReadFile readFile;
@@ -10,8 +10,9 @@ public class Model extends Observable {
     private long startTime;
     private long endTime;
     private double totalSecondsToIndex;
-    public Model() {
 
+    public Model() {
+        engine = new Engine();
     }
 
     /**
@@ -20,14 +21,14 @@ public class Model extends Observable {
      * @param pathOfIndexDestination
      * @param stemming
      */
-    public void loadPath(String pathOfCorpus, String pathOfIndexDestination, boolean stemming) throws Exception {
+    public void loadPath(String pathOfCorpus, String pathOfIndexDestination, boolean stemming) {
         //add filekind so it would know if its what corpus to parse or where to save the index
 
         startTime = System.nanoTime();
         //CHANGE
         //readFile = new ReadFile(pathOfCorpus,pathOfIndexDestination,stemming);
         //try {
-            engine = new Engine(pathOfCorpus, pathOfIndexDestination, stemming);
+            engine.setParameters(pathOfCorpus, pathOfIndexDestination, stemming);
             engine.start();
             endTime = System.nanoTime();
             totalSecondsToIndex = (endTime - startTime) / 1000000000.0;
@@ -65,9 +66,6 @@ public class Model extends Observable {
 
 
     public void uploadDictionaryToMem() {
-        //create a func which will take the dictionary from path where posting files and dict is saved
-        //and upload the dict itself to main memory
-        //readFile.getParser().getIndexer().setDictionary();
         engine.setDictionary();
     }
 
@@ -77,5 +75,26 @@ public class Model extends Observable {
 
     public double getTotalTimeToIndex(){
         return totalSecondsToIndex;
+    }
+
+    public TreeMap<Integer, Vector<String>> processQuery(String queriesFile, HashSet<String> cities) {
+        return engine.searchSingleQuery(queriesFile,cities);
+    }
+
+    public TreeMap<Integer, Vector<String>> processQuery(File queriesFile, HashSet<String> cities) {
+        return engine.searchMultipleQueries(queriesFile,cities);
+    }
+
+
+    public void setPathToSaveIndex(String absolutePath) {
+        engine.setPathToSaveIndex(absolutePath);
+    }
+
+    public void setIsStemming(boolean isStemming) {
+        engine.setStemming(isStemming);
+    }
+
+    public TreeSet<String> readDocumentsLanguages() {
+        return engine.readDocumentsLanguages();
     }
 }

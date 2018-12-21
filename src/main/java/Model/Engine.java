@@ -4,8 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.TreeSet;
+import java.util.*;
 
 public class Engine {
 
@@ -13,27 +12,46 @@ public class Engine {
     private ReadFile readFile;
     private Parse parse;
     private Indexer indexer;
+    private Searcher searcher;
+    private Boolean isStemming;
     public static HashMap<String,TermDetails> dictionary;// <Term, df, totalTF, ptr>
     public static String pathToSaveIndex;
 
+    public Engine() {
+        this.parse = new Parse(false,null);
+        searcher = new Searcher(parse);
+    }
 
-
-
-    public Engine(String pathToParse,String pathToSaveIndex,  boolean isStemming) {
-        this.pathToSaveIndex = pathToSaveIndex;
+    /**
+     *
+     * @param pathToParse
+     * @param pathToSaveIndex
+     * @param isStemming
+     */
+    public void setParameters(String pathToParse, String pathToSaveIndex, boolean isStemming) {
+        Engine.pathToSaveIndex = pathToSaveIndex;
+        this.isStemming = isStemming;
         indexer = new Indexer(pathToSaveIndex,isStemming);
-        parse = new Parse(isStemming,indexer);
+        parse.setStemming(isStemming);
+        parse.setIndexer(indexer);
         readFile = new ReadFile(pathToParse,parse);
     }
 
-    public void start() throws Exception {
+    /**
+     *
+     */
+    public void start() {
+        try {
             readFile.startReading();
             // write last data to disk
             indexer.writeDataToDisk();
             // creating inverted index
             indexer.createInvertedIndex();
-    }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
+    }
 
     public void reset() {
         indexer.reset();
@@ -72,6 +90,14 @@ public class Engine {
         return indexer.dictionaryToString();
     }
 
+    public TreeMap<Integer, Vector<String>> searchSingleQuery(String query, HashSet<String> cities){
+        return searcher.processQuery(query,cities);
+    }
+
+    public TreeMap<Integer, Vector<String>> searchMultipleQueries(File query, HashSet<String> cities){
+        return searcher.processQuery(query,cities);
+    }
+
     public HashMap<String, TermDetails> getDictionary() {
         return dictionary;
     }
@@ -97,6 +123,31 @@ public class Engine {
     }
 
 
+    public void setPathToSaveIndex(String absolutePath) {
+        if (!isStemming)
+            Engine.pathToSaveIndex = absolutePath + "\\posting";
+        else
+            Engine.pathToSaveIndex = absolutePath + "\\postingStemming";
+    }
 
+    public void setStemming(Boolean stemming) {
+        isStemming = stemming;
+        parse.setStemming(stemming);
+    }
 
+    public TreeSet<String> readDocumentsLanguages() {
+        TreeSet cities = new TreeSet();
+        try{
+            File dictionaryFile = new File(pathToSaveIndex + "\\cityDictionary.txt");
+            BufferedReader bf = new BufferedReader(new FileReader(dictionaryFile));
+            String line = bf.readLine();
+            while (line != null){
+                String city = line.substring(0,line.indexOf(","));
+                cities.add(city);
+                line = bf.readLine();
+            }
+            bf.close();
+        } catch (IOException e) { }
+        return cities;
+    }
 }

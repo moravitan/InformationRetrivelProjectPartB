@@ -51,6 +51,7 @@ public class Indexer {
         this.upperPosting = new Vector<>();
         this.lowerPosting = new Vector<>();
         this.cityPosting = new Vector<>();
+        this.numOfPosting = 0;
         int threadPoolSize = Runtime.getRuntime().availableProcessors() * 2;
         this.threadPoolExecutor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
         threadPoolExecutor.setCorePoolSize(threadPoolSize);
@@ -201,7 +202,7 @@ public class Indexer {
      * Then check if the same word exist both in lower and upper case posing files
      * Then divide the posing files to posting files for each letter and for each number
      */
-    public void createInvertedIndex() throws InterruptedException {
+    public void createInvertedIndex() {
         mergePostingFile();
         Thread thread = new Thread(new Runnable() {
             @Override
@@ -225,10 +226,15 @@ public class Indexer {
             }
         });
         thread2.start();
-        thread.join();
+        try {
+            thread.join();
+        } catch (InterruptedException e) { }
         thread1.start();
-        thread1.join();
-        thread2.join();
+        try {
+            thread1.join();
+            thread2.join();
+        } catch (InterruptedException e) { }
+
         //dividePostingFileNumbers();
         Thread thread3 = new Thread(new Runnable() {
             @Override
@@ -246,8 +252,10 @@ public class Indexer {
         //createCityInvertedIndex();
         thread3.start();
         thread4.start();
-        thread3.join();
-        thread4.join();
+        try {
+            thread3.join();
+            thread4.join();
+        } catch (InterruptedException e) { }
         ReadFile.mapOfDocs.clear();
         ReadFile.stopWords.clear();
         createDocumentDetailsFile();
@@ -264,9 +272,9 @@ public class Indexer {
             FileWriter writer = new FileWriter(pathToSaveIndex + "\\DetailsForRank.txt");
             long averageLengthOfDocuments = totalLength/Parse.numberOfDocuments;
             writer.write(Parse.numberOfDocuments + "," + averageLengthOfDocuments);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+            writer.flush();
+            writer.close();
+        } catch (IOException e) { }
 
     }
 
@@ -296,9 +304,7 @@ public class Indexer {
             }
             writer.flush();
             writer.close();
-        }catch (IOException e) {
-            e.printStackTrace();
-        }
+        }catch (IOException e) { }
         ReadFile.mapOfDocs = new HashMap<>();
     }
 
@@ -343,7 +349,7 @@ public class Indexer {
             writerUpper.close();
             writerLower.close();
 
-        }catch (Exception e){}
+        }catch (Exception e){ }
     }
 
     /**
@@ -360,9 +366,7 @@ public class Indexer {
                 writer.write("<" + postingDetails.getDocId() + "," + postingDetails.getTF() + ">");
             }
             writer.write("\n");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        } catch (IOException e) { }
     }
 
     /**
@@ -384,7 +388,7 @@ public class Indexer {
             }
             writer.flush();
             writer.close();
-        }catch (Exception e) {}
+        }catch (Exception e) { }
 
     }
 
@@ -453,9 +457,7 @@ public class Indexer {
             threadPoolExecutor.execute(new RunnableMerge(postingCity,pathToSaveIndex + "\\mergePostingCities.txt"));
             threadPoolExecutor.shutdown();
             while (threadPoolExecutor.getActiveCount() != 0);
-        } catch (Exception e) {
-
-        }
+        } catch (Exception e) { }
 
     }
 
@@ -492,9 +494,7 @@ public class Indexer {
             writer.flush();
             writer.close();
             postingFile.delete();
-        } catch (IOException e) {
-
-        }
+        } catch (IOException e) { }
     }
 
 
@@ -566,9 +566,7 @@ public class Indexer {
             file = new File(pathToSaveIndex + "\\mergePostingLowerCase.txt");
             file.delete();
 
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        } catch (IOException e) { }
     }
 
 
@@ -620,9 +618,7 @@ public class Indexer {
             writer.close();
             bf.close();
             numbers.delete();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        } catch (IOException e) { }
 
 
     }
@@ -697,9 +693,7 @@ public class Indexer {
             bfUpper.close();
             newLower.delete();
             newUpper.delete();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        } catch (IOException e) { }
     }
 
 
@@ -716,9 +710,7 @@ public class Indexer {
             fileWriter.close();
             numberOfTerms = dictionary.size();
             dictionary.clear();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        } catch (IOException e) { }
 
     }
 
@@ -757,7 +749,7 @@ public class Indexer {
             bf.close();
             postingCity.delete();
             citiesDictionary.clear();
-        }catch (IOException e){}
+        }catch (IOException e) {}
     }
 
 
@@ -800,24 +792,27 @@ public class Indexer {
      *
      * @return the dictionary in a string format:  term, number of appearance, row number in the posting file
      */
-    private void dictionaryToText(FileWriter fileWriter) throws IOException {
+    private void dictionaryToText(FileWriter fileWriter) {
         File file = new File(pathToSaveIndex + "\\dictionaryToDisplay.txt");
-        FileWriter writer = new FileWriter(file);
-        StringBuilder ans = new StringBuilder(" ");
-        TreeMap <String,TermDetails> map = new TreeMap<>(dictionary);
-        for (Map.Entry<String,TermDetails> entry: map.entrySet()){
-            if (entry.getValue().getPtr() == 0){
-                synchronized (dictionary) {
-                    dictionary.remove(entry.getKey());
+        FileWriter writer = null;
+        try {
+            writer = new FileWriter(file);
+            StringBuilder ans = new StringBuilder(" ");
+            TreeMap <String,TermDetails> map = new TreeMap<>(dictionary);
+            for (Map.Entry<String,TermDetails> entry: map.entrySet()){
+                if (entry.getValue().getPtr() == 0){
+                    synchronized (dictionary) {
+                        dictionary.remove(entry.getKey());
+                    }
+                    continue;
                 }
-                continue;
+                // term,number of appearance,line number
+                fileWriter.write(entry.getKey() + "," + entry.getValue().getTotalTF() + "," + entry.getValue().getDocumentFrequency() + "," + entry.getValue().getPtr() +  "\n");
+                writer.write(entry.getKey() + "," + entry.getValue().getTotalTF() + "\n");
             }
-            // term,number of appearance,line number
-            fileWriter.write(entry.getKey() + "," + entry.getValue().getTotalTF() + "," + entry.getValue().getDocumentFrequency() + "," + entry.getValue().getPtr() +  "\n");
-            writer.write(entry.getKey() + "," + entry.getValue().getTotalTF() + "\n");
-        }
-        writer.flush();
-        writer.close();
+            writer.flush();
+            writer.close();
+        } catch (IOException e) { }
     }
 
 
@@ -837,9 +832,7 @@ public class Indexer {
             }
             br.close();
             return list;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        } catch (IOException e) { }
         return null;
     }
     /**

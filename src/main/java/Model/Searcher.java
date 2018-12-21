@@ -17,6 +17,11 @@ public class Searcher {
     HashSet<String> cities;
     static TreeMap<Integer, Vector<String>> result;
 
+    public Searcher(Parse parse) {
+        this.parse = parse;
+        this.ranker = new Ranker();
+    }
+
     /**
      *
      * @param query

@@ -1,6 +1,8 @@
 package View;
 
 import Controller.Controller;
+import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
@@ -9,21 +11,35 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.stage.*;
+import org.controlsfx.control.CheckComboBox;
 
+import java.io.File;
 import java.io.IOException;
-import java.util.Observable;
-import java.util.Observer;
-import java.util.Optional;
+import java.net.URISyntaxException;
+import java.util.*;
 
 
 public class View implements Observer {
     private Controller controller;
     private Stage primaryStage;
     public javafx.scene.control.Button btn_start;
+    public javafx.scene.control.Button btn_loadQuery;
+    public javafx.scene.control.Button btn_loadIndexPath;
+    public javafx.scene.control.Button btn_searchSingleQuery;
+    public javafx.scene.control.Button btn_searchMultiQueries;
+    public javafx.scene.control.TextField pathToQueriesFile;
+    public javafx.scene.control.TextField pathToIndexDirectory;
+    public javafx.scene.control.TextField singleQuery;
+    public javafx.scene.control.CheckBox cb_stemming;
+    public javafx.scene.layout.VBox vb_cities;
+    public ImageView logo;
     private OperatingWindow operatingWindow;
+    private SearchResults searchResults;
+    private HashSet<String> cities;
+    public static TreeMap<Integer, Vector<String>> result;
 
     @Override
     public void update(Observable o, Object arg) {
@@ -33,6 +49,17 @@ public class View implements Observer {
     public void setController(Controller controller, Stage primaryStage) {
         this.controller = controller;
         this.primaryStage = primaryStage;
+        this.cities = new HashSet<>();
+        btn_searchSingleQuery.setDisable(true);
+        btn_searchMultiQueries.setDisable(true);
+        btn_loadQuery.setDisable(true);
+        Image img2 = null;
+        try {
+            img2 = new Image(getClass().getResource("/logo.png").toURI().toString());
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
+        logo.setImage(img2);
     }
 
     /**
@@ -67,6 +94,81 @@ public class View implements Observer {
                     windowEvent.consume();
 
                 }
+            }
+        });
+    }
+
+    /**
+     *
+     * @param actionEvent
+     */
+    public void searchQuery(ActionEvent actionEvent) {
+        if (singleQuery.getText() == null || singleQuery.getText().trim().isEmpty())
+            alert("You did not enter any query", Alert.AlertType.ERROR);
+        else {
+            controller.setIsStemming(cb_stemming.isSelected());
+            result = controller.processQuery(singleQuery.getText(), cities);
+            newStage("SearchResults.fxml", "", searchResults, 281, 400, controller);
+        }
+    }
+
+    /**
+     *
+     * @param actionEvent
+     */
+    public void searchQueryFile(ActionEvent actionEvent) {
+        if (pathToQueriesFile.getText() == null || pathToQueriesFile.getText().trim().isEmpty())
+            alert("You did not enter any path", Alert.AlertType.ERROR);
+        else {
+            result = controller.processQueryFile(new File(pathToQueriesFile.getText()), cities);
+            newStage("SearchResults.fxml", "", searchResults, 281, 400, controller);
+
+        }
+    }
+
+    public void loadQueryPath(ActionEvent actionEvent) {
+        try {
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Open Resource File");
+            File selectedFile = fileChooser.showOpenDialog(new Stage());
+            if (selectedFile != null) {
+                pathToQueriesFile.setText(selectedFile.getAbsolutePath());
+            }
+        }catch (Exception e){
+            e.getStackTrace();
+        }
+    }
+
+    public void loadIndexPath(ActionEvent actionEvent) {
+        try {
+            DirectoryChooser fileChooser = new DirectoryChooser();
+            fileChooser.setTitle("Open Resource File");
+            File selectedFile = fileChooser.showDialog(new Stage());
+            if (selectedFile != null) {
+                pathToIndexDirectory.setText(selectedFile.getAbsolutePath());
+            }
+        }catch (Exception e){
+            e.getStackTrace();
+        }
+    }
+
+    public void loadDictionary(ActionEvent actionEvent) {
+        controller.setIsStemming(cb_stemming.isSelected());
+        controller.setPathToSaveIndex(pathToIndexDirectory.getText());
+        controller.uploadDictionaryToMem();
+        alert("The dictionary have been uploaded to memory." , Alert.AlertType.INFORMATION);
+        btn_loadQuery.setDisable(false);
+        btn_searchSingleQuery.setDisable(false);
+        btn_searchMultiQueries.setDisable(false);
+        // set corpus cities
+        ObservableList<String> corpusCities = controller.readDocumentsLanguages();
+        org.controlsfx.control.CheckComboBox<String> checkComboBox = new CheckComboBox<String>(corpusCities);
+        vb_cities.getChildren().clear();
+        vb_cities.getChildren().addAll(checkComboBox);
+        // when a city has been checked add it to hash set
+        checkComboBox.getCheckModel().getCheckedItems().addListener(new ListChangeListener<String>() {
+            public void onChanged(ListChangeListener.Change<? extends String> c) {
+                cities.add(checkComboBox.getCheckModel().getCheckedItems().toString());
             }
         });
     }

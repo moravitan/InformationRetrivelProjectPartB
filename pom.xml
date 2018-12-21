@@ -14,6 +14,20 @@
                 </configuration>
             </plugin>
         </plugins>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>**/*.fxml</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>**/*.png</include>
+                </includes>
+            </resource>
+        </resources>
     </build>
     <groupId>groupId</groupId>
     <artifactId>QueensSevenIRProject</artifactId>
@@ -35,6 +49,12 @@
             <groupId>com.google.code.externalsortinginjava</groupId>
             <artifactId>externalsortinginjava</artifactId>
             <version>0.2.5</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.controlsfx/controlsfx -->
+        <dependency>
+            <groupId>org.controlsfx</groupId>
+            <artifactId>controlsfx</artifactId>
+            <version>8.40.14</version>
         </dependency>
     </dependencies>
 

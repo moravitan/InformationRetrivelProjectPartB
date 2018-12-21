@@ -1,20 +1,22 @@
 package Model;
 
-import java.util.HashMap;
-
 public class testMor {
 
     public static void main(String[] args) {
-        String line = "sdfsdfds,12";
-        String docId = line.substring(0,line.indexOf(","));
-        line = line.substring(line.indexOf(","));
-        int docLength = Integer.valueOf(line.substring(line.indexOf(",") + 1));
-        System.out.println(docLength);
+        testEngine();
 
     }
 
-    public static void test(HashMap<String,Integer> hashMap){
-        hashMap.put("aa",2);
+    public static void testEngine(){
+        String pathToParse = "C:\\Users\\איתן אביטן\\Downloads\\לימודים\\אחזור מידע\\פרויקט מנוע חיפוש\\corpus\\corpus";
+        String pathToSaveIndex = "C:\\Users\\איתן אביטן\\Downloads\\לימודים\\אחזור מידע\\פרויקט מנוע חיפוש\\indexer";
+        Engine engine = new Engine();
+        engine.setParameters(pathToParse,pathToSaveIndex,false);
+        try {
+            engine.start();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
     }
 }

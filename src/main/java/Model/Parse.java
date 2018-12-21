@@ -153,25 +153,24 @@ public class Parse {
      */
     public void parsing(String docId, String docText, boolean isCorpus){
         this.docId = docId;
-        // every 40 files, move all the data in the term map into indexer and reset the map
-        numberOfDocuments++;
-        // break the text line by line
-        BreakIterator iterator = BreakIterator.getSentenceInstance(Locale.US);
-        // get the text between the tags <TEXT> </TEXT>
-        Document document = Jsoup.parse(docText);
-        String text = document.getElementsByTag("TEXT").text();
-        iterator.setText(text);
-        int start = iterator.first();
-        for (int end = iterator.next();
-             end != BreakIterator.DONE;
-             start = end, end = iterator.next()) {
-            try{
-                parsingLine(text.substring(start,end));
-            }
-            catch (Exception e){ }
+        if (isCorpus){
+            numberOfDocuments++;
+            // break the text line by line
+            BreakIterator iterator = BreakIterator.getSentenceInstance(Locale.US);
+            // get the text between the tags <TEXT> </TEXT>
+            Document document = Jsoup.parse(docText);
+            String text = document.getElementsByTag("TEXT").text();
+            iterator.setText(text);
+            int start = iterator.first();
+            for (int end = iterator.next();
+                 end != BreakIterator.DONE;
+                 start = end, end = iterator.next()) {
+                try{
+                    parsingLine(text.substring(start,end));
+                }
+                catch (Exception e){ }
 
-        }
-        if(isCorpus) {
+            }
             // update and reset all the parameters of the current document
             ReadFile.mapOfDocs.get(docId).setMaxTermFrequency(maxTermFrequency);
             ReadFile.mapOfDocs.get(docId).setNumberOfDistinctWords(numberOfDistinctWords);
@@ -180,14 +179,19 @@ public class Parse {
             ReadFile.mapOfDocs.get(docId).setTopFiveEntities(topFiveEntities);
             /////////////
             indexer.setAll(docId, termsMapPerDocument, citiesMap);
+            maxTermFrequency = 0;
+            numberOfDistinctWords = 0;
+            position = -1;
+            length = 0;
+            termsMapPerDocument = new HashMap<>();
+            citiesMap = new HashMap<>();
+            topFiveEntities = new TreeMap<>();
         }
-        maxTermFrequency = 0;
-        numberOfDistinctWords = 0;
-        position = -1;
-        length = 0;
-        termsMapPerDocument = new HashMap<>();
-        citiesMap = new HashMap<>();
-        topFiveEntities = new TreeMap<>();
+        else{
+            termsMapPerDocument = new HashMap<>();
+            parsingLine(docText);
+
+        }
     }
 
 
@@ -252,13 +256,12 @@ public class Parse {
             if (wordsInDoc[i].endsWith(")") || wordsInDoc[i].endsWith("]") || wordsInDoc[i].endsWith(":"))
                 wordsInDoc[i] = wordsInDoc[i].substring(0,wordsInDoc[i].length() - 1);
 
+            if (wordsInDoc[i].length() == 0)
+                continue;
             if (ReadFile.stopWords.contains(wordsInDoc[i].toLowerCase()) && !wordsInDoc[i].equalsIgnoreCase("between") && !wordsInDoc[i].equals("may"))
                 continue;
 
 
-
-            if (wordsInDoc[i].equalsIgnoreCase("moscow"))
-                numCounter++;
 
             // check if the string in wordInDoc[i] contains only letters
             if (!monthDictionary.containsKey(wordsInDoc[i]) && !wordsInDoc[i].equals("between") && isWord(wordsInDoc[i])){
@@ -574,6 +577,38 @@ public class Parse {
                         i = i + 1;
                         continue;
                     }
+                    //handle number-number like 2,200-2,400 || 120-120.5 or number-word like: 2-kids, 2.5-people
+                    int makafIndex = wordsInDoc[i].indexOf('-');
+                    if (makafIndex != -1) {
+                        String beforeMakaf = wordsInDoc[i].substring(0, makafIndex);
+                        String afterMakaf = wordsInDoc[i].substring(makafIndex + 1);
+                        //handle number-number like: 1/2-3/4 || 2-2.5
+                        if (isInteger(beforeMakaf,false)) {
+                            numberTerm.add(new StringBuilder(beforeMakaf));
+                            StringBuilder term1 = parseNumbers(false, numberTerm, false);
+                            numberTerm.clear();
+                            if (isInteger(afterMakaf,false)) {
+                                numberTerm.add(new StringBuilder(afterMakaf));
+                                //1-1 1/2 || 1-2 Million
+                                if (i + 1 < wordsInDoc.length && (isInteger(wordsInDoc[i + 1],false) || numbersDictionary.containsKey(wordsInDoc[i + 1]))) {
+                                    numberTerm.add(new StringBuilder(wordsInDoc[i + 1]));
+                                    twoNumsCells = true;
+                                    i = i + 1;
+                                }
+                                StringBuilder term2 = parseNumbers(false, numberTerm, twoNumsCells);
+                                term1.append("-" + term2);
+                                numberTerm.clear();
+                                updateTerm(term1.toString());
+                                continue;
+                            }
+                            //number-word like 2-girls
+                            else {
+                                term1.append("-" + afterMakaf);
+                                updateTerm(term1.toString());
+                                continue;
+                            }
+                        }
+                    }
 
                     numberTerm.add(new StringBuilder(wordsInDoc[i]));
                     if (twoNumsCells || (i + 1 < wordsInDoc.length && numbersDictionary.containsKey(wordsInDoc[i + 1]))) {
@@ -594,41 +629,6 @@ public class Parse {
                         updateTerm(wordsInDoc[i]);
                         continue;
                     }
-                }
-
-                //handle number-number like 2,200-2,400 || 120-120.5 or number-word like: 2-kids, 2.5-people
-                int makafIndex = wordsInDoc[i].indexOf('-');
-                if (makafIndex != -1) {
-                    String beforeMakaf = wordsInDoc[i].substring(0, makafIndex);
-                    String afterMakaf = wordsInDoc[i].substring(makafIndex + 1);
-                    //handle number-number like: 1/2-3/4 || 2-2.5
-                    if (isInteger(beforeMakaf,false)) {
-                        numberTerm.add(new StringBuilder(beforeMakaf));
-                        StringBuilder term1 = parseNumbers(false, numberTerm, false);
-                        numberTerm.clear();
-                        if (isInteger(afterMakaf,false)) {
-                            numberTerm.add(new StringBuilder(afterMakaf));
-                            //1-1 1/2 || 1-2 Million
-                            if (i + 1 < wordsInDoc.length && (isInteger(wordsInDoc[i + 1],false) || numbersDictionary.containsKey(wordsInDoc[i + 1]))) {
-                                numberTerm.add(new StringBuilder(wordsInDoc[i + 1]));
-                                twoNumsCells = true;
-                                i = i + 1;
-                            }
-                            StringBuilder term2 = parseNumbers(false, numberTerm, twoNumsCells);
-                            term1.append("-" + term2);
-                            numberTerm.clear();
-                            updateTerm(term1.toString());
-                            continue;
-                        }
-                        //number-word like 2-girls
-                        else {
-                            term1.append("-" + afterMakaf);
-                            updateTerm(term1.toString());
-                            continue;
-                        }
-                    }
-
-
                 }
 
 /*                wordsInDoc[i] = wordsInDoc[i].replaceAll("[^a-zA-Z]", "");
@@ -748,22 +748,25 @@ public class Parse {
                         finalTerm.append("K");
                         break;
                     }
-                    if (tmpNum.contains(".") && dotIndex < 5){
+                    if ((tmpNum.contains(".") && dotIndex < 5) || (tmpNum.length() < 4 && StringUtils.isNumeric(tmpNum))){
                         finalTerm.append(tmpNum);
                     }
-                    else{
-                        tmpNum = tmpNum.replaceAll("\\." , "");
-                        finalTerm.append(tmpNum);
-                        if (dotIndex == -1)
-                            finalTerm.insert(finalTerm.length()-3,".");
-                        else
-                            finalTerm.insert(dotIndex-3,".");
-                        finalTerm = allCharactersZero(finalTerm);
-                        finalTerm.append("K");
+                    else {
+                        tmpNum = tmpNum.replaceAll("\\.", "");
+                        if (tmpNum.length() > 3) {
+                            finalTerm.append(tmpNum);
+                            if (dotIndex == -1)
+                                finalTerm.insert(finalTerm.length() - 3, ".");
+                            else
+                                finalTerm.insert(dotIndex - 3, ".");
+                            finalTerm = allCharactersZero(finalTerm);
+                            finalTerm.append("K");
+                        }
                     }
                     if (priceTermSize == 2) {
                         finalTerm.append(weightDictionary.get(numberTerm.elementAt(1).toString()));
                     }
+
                 }
                 break;
             }
@@ -813,7 +816,10 @@ public class Parse {
             else
                 str = str.delete(i,str.length());
         }
-        str.delete(str.indexOf(".") + 3,str.length());
+        if (str.toString().endsWith("."))
+            return str.delete(str.indexOf("."),str.length());
+        if (str.indexOf(".") + 3 < str.length())
+            str.delete(str.indexOf(".") + 3,str.length());
         return str;
     }
 
@@ -1004,17 +1010,13 @@ public class Parse {
         }
     }
 
-
-    /**
-     * This function sends  the remaining dictionary to indexer and than call the create inverted file in indexer object
-     */
-    public void notifyDone() throws InterruptedException {
-        //createCityIndex();
-        //indexer.buildIndex(termsMapPerDocument);
-        indexer.writeDataToDisk();
-        indexer.createInvertedIndex();
+    public void setStemming(boolean stemming) {
+        isStemming = stemming;
     }
 
+    public void setIndexer(Indexer indexer) {
+        this.indexer = indexer;
+    }
 
     //<editor-fold desc="Getters">
     /**

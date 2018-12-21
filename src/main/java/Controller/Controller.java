@@ -6,9 +6,7 @@ import javafx.collections.ObservableList;
 import javafx.scene.control.Alert;
 
 import java.io.File;
-import java.util.Observable;
-import java.util.Observer;
-import java.util.TreeSet;
+import java.util.*;
 
 public class Controller extends Observable implements Observer {
 
@@ -38,6 +36,7 @@ public class Controller extends Observable implements Observer {
             isValid = true;
         }
         catch (Exception e) {
+            e.printStackTrace();
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setHeaderText("Oops..");
             alert.setContentText("The chosen file isn't in the right format");
@@ -104,5 +103,28 @@ public class Controller extends Observable implements Observer {
      */
     public double getTotalTimeToIndex(){
         return model.getTotalTimeToIndex();
+    }
+
+    public TreeMap<Integer, Vector<String>> processQuery(String query, HashSet<String> cities) {
+        return model.processQuery(query,cities);
+    }
+
+    public TreeMap<Integer, Vector<String>> processQueryFile(File queriesFile, HashSet<String> cities) {
+        return model.processQuery(queriesFile,cities);
+    }
+
+    public void setPathToSaveIndex(String absolutePath) {
+        model.setPathToSaveIndex(absolutePath);
+    }
+
+    public void setIsStemming(boolean isStemming) {
+        model.setIsStemming(isStemming);
+    }
+
+    public ObservableList<String> readDocumentsLanguages() {
+        TreeSet<String> docsLang = model.readDocumentsLanguages();
+        //casting
+        ObservableList<String> docLangObservable = FXCollections.observableArrayList(docsLang);
+        return docLangObservable;
     }
 }
