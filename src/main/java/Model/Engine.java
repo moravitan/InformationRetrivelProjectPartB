@@ -25,9 +25,9 @@ public class Engine {
 
     /**
      *
-     * @param pathToParse
-     * @param pathToSaveIndex
-     * @param isStemming
+     * @param pathToParse - path of the corpus
+     * @param pathToSaveIndex - path where to save the index files
+     * @param isStemming - boolean indicating if need to to stem or not
      */
     public void setParameters(String pathToParse, String pathToSaveIndex, boolean isStemming) {
         Engine.pathToSaveIndex = pathToSaveIndex;
@@ -39,7 +39,7 @@ public class Engine {
     }
 
     /**
-     *
+     * This method start the building of the inverted index
      */
     public void start() {
         try {
@@ -54,6 +54,9 @@ public class Engine {
 
     }
 
+    /**
+     * This method delete all the files created during the process
+     */
     public void reset() {
         indexer.reset();
     }
@@ -76,6 +79,7 @@ public class Engine {
                 line = bf.readLine();
             }
             bf.close();
+            // load the document hash map to memory as well
             setDocumentDetails();
         } catch (IOException e) { }
     }
@@ -96,6 +100,11 @@ public class Engine {
         return searcher.processQuery(query,cities);
     }
 
+    /**
+     * @param query
+     * @param cities
+     * @return all the documents which are relevant to the queries inside the query file
+     */
     public TreeMap<Integer, Vector<String>> searchMultipleQueries(File query, HashSet<String> cities){
         return searcher.processQuery(query,cities);
     }
@@ -125,6 +134,7 @@ public class Engine {
     }
 
 
+
     public void setPathToSaveIndex(String absolutePath) {
         if (!isStemming)
             Engine.pathToSaveIndex = absolutePath + "\\posting";
@@ -132,11 +142,16 @@ public class Engine {
             Engine.pathToSaveIndex = absolutePath + "\\postingStemming";
     }
 
+
     public void setStemming(Boolean stemming) {
         isStemming = stemming;
         parse.setStemming(stemming);
     }
 
+    /**
+     *
+     * @return all the cities which founded between the tag < f p=104></>
+     */
     public TreeSet<String> readDocumentsCities() {
         TreeSet cities = new TreeSet();
         try{
@@ -153,6 +168,9 @@ public class Engine {
         return cities;
     }
 
+    /**
+     * This method upload the document details file to the memory
+     */
     public void setDocumentDetails(){
         try{
             File dictionaryFile = new File(pathToSaveIndex + "\\documentsDetails.txt");

@@ -121,10 +121,10 @@ public class Controller extends Observable implements Observer {
         model.setIsStemming(isStemming);
     }
 
-    public ObservableList<String> readDocumentsLanguages() {
-        TreeSet<String> docsLang = model.readDocumentsLanguages();
-        //casting
-        ObservableList<String> docLangObservable = FXCollections.observableArrayList(docsLang);
-        return docLangObservable;
+    public ObservableList<String> readDocumentsCities() {
+        TreeSet<String> docCities = model.readDocumentsCities();
+        //casting readDocumentsLanguages
+        ObservableList<String> docCitiesObservable = FXCollections.observableArrayList(docCities);
+        return docCitiesObservable;
     }
 }

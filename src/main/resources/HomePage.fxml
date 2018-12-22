@@ -19,7 +19,7 @@
       <ImageView fx:id="logo" fitHeight="128.0" fitWidth="386.0" layoutX="91.0" layoutY="27.0" pickOnBounds="true" preserveRatio="true" />
       <TextField fx:id="singleQuery" alignment="CENTER" layoutX="48.0" layoutY="119.0" prefHeight="25.0" prefWidth="316.0" promptText="Enter your query" />
       <Button fx:id="btn_searchSingleQuery" layoutX="392.0" layoutY="119.0" mnemonicParsing="false" onAction="#searchQuery" style="-fx-text-fill: MediumBlue;" text="Search" />
-      <CheckBox fx:id="cb_stemming" layoutX="48.0" layoutY="185.0" mnemonicParsing="false" prefHeight="31.0" prefWidth="96.0" text="Stemming">
+      <CheckBox fx:id="cb_stemming" layoutX="190.0" layoutY="259.0" mnemonicParsing="false" prefHeight="31.0" prefWidth="96.0" text="Stemming">
          <font>
             <Font size="13.0" />
          </font>
@@ -27,15 +27,15 @@
       <TextField fx:id="pathToQueriesFile" alignment="CENTER" layoutX="48.0" layoutY="155.0" prefHeight="25.0" prefWidth="316.0" promptText="Enter a path" />
       <Button fx:id="btn_searchMultiQueries" layoutX="444.0" layoutY="155.0" mnemonicParsing="false" onAction="#searchQueryFile" style="-fx-text-fill: Green;" text="Search" />
       <Button fx:id="btn_loadQuery" layoutX="371.0" layoutY="155.0" mnemonicParsing="false" onAction="#loadQueryPath" style="-fx-text-fill: Red;" text="Load File" />
-      <TextField fx:id="pathToIndexDirectory" alignment="CENTER" layoutX="281.0" layoutY="229.0" prefHeight="25.0" prefWidth="206.0" promptText="Enter a path of your index directory" />
+      <TextField fx:id="pathToIndexDirectory" alignment="CENTER" layoutX="186.0" layoutY="229.0" prefHeight="25.0" prefWidth="348.0" promptText="Enter a path of your index directory" />
       <Button fx:id="btn_loadIndexPath" layoutX="281.0" layoutY="262.0" mnemonicParsing="false" onAction="#loadIndexPath" style="-fx-text-fill: Red;" text="Choose Path" />
       <Button fx:id="btn_loadDictionary" layoutX="371.0" layoutY="262.0" mnemonicParsing="false" onAction="#loadDictionary" style="-fx-text-fill: Green;" text="Load Dictionary To Memory" />
-      <CheckBox fx:id="cb_semantic" layoutX="144.0" layoutY="185.0" mnemonicParsing="false" prefHeight="31.0" prefWidth="96.0" text="Semantic">
+      <CheckBox fx:id="cb_semantic" layoutX="48.0" layoutY="185.0" mnemonicParsing="false" prefHeight="31.0" prefWidth="96.0" text="Semantic">
          <font>
             <Font size="13.0" />
          </font>
       </CheckBox>
-      <VBox fx:id="vb_cities" layoutX="332.0" layoutY="185.0" prefHeight="31.0" prefWidth="120.0" />
-      <Label layoutX="245.0" layoutY="186.0" prefHeight="31.0" prefWidth="83.0" text="Choose Cities:" />
+      <VBox fx:id="vb_cities" layoutX="238.0" layoutY="185.0" prefHeight="31.0" prefWidth="120.0" />
+      <Label layoutX="155.0" layoutY="185.0" prefHeight="31.0" prefWidth="83.0" text="Choose Cities:" />
    </children>
 </AnchorPane>

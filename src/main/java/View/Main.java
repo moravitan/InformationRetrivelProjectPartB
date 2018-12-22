@@ -21,7 +21,6 @@ public class Main extends Application {
         primaryStage.setTitle("Home of SEARCH");
         Scene scene = new Scene(root, 577, 458);
         primaryStage.setScene(scene);
-
         view = fxmlLoader.getController();
         view.setController(controller,primaryStage);
         controller.addObserver(view);

@@ -1,7 +1,6 @@
 package View;
 
 import Controller.Controller;
-import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -35,6 +34,7 @@ public class View implements Observer {
     public javafx.scene.control.TextField singleQuery;
     public javafx.scene.control.CheckBox cb_stemming;
     public javafx.scene.layout.VBox vb_cities;
+    org.controlsfx.control.CheckComboBox<String> checkComboBox;
     public ImageView logo;
     private OperatingWindow operatingWindow;
     private SearchResults searchResults;
@@ -106,6 +106,7 @@ public class View implements Observer {
         if (singleQuery.getText() == null || singleQuery.getText().trim().isEmpty())
             alert("You did not enter any query", Alert.AlertType.ERROR);
         else {
+            getCities();
             controller.setIsStemming(cb_stemming.isSelected());
             result = controller.processQuery(singleQuery.getText(), cities);
             if (result.size() == 0)
@@ -123,6 +124,7 @@ public class View implements Observer {
         if (pathToQueriesFile.getText() == null || pathToQueriesFile.getText().trim().isEmpty())
             alert("You did not enter any path", Alert.AlertType.ERROR);
         else {
+            getCities();
             result = controller.processQueryFile(new File(pathToQueriesFile.getText()), cities);
             if (result.size() == 0)
                 alert("Sorry, but we couldn't find results for your search", Alert.AlertType.INFORMATION);
@@ -167,25 +169,30 @@ public class View implements Observer {
             controller.setIsStemming(cb_stemming.isSelected());
             controller.setPathToSaveIndex(pathToIndexDirectory.getText());
             controller.uploadDictionaryToMem();
-            alert("The dictionary have been uploaded to memory.", Alert.AlertType.INFORMATION);
             btn_loadQuery.setDisable(false);
             btn_searchSingleQuery.setDisable(false);
             btn_searchMultiQueries.setDisable(false);
             // set corpus cities
-            ObservableList<String> corpusCities = controller.readDocumentsLanguages();
-            org.controlsfx.control.CheckComboBox<String> checkComboBox = new CheckComboBox<String>(corpusCities);
+            ObservableList<String> corpusCities = controller.readDocumentsCities();
+            this.checkComboBox = new CheckComboBox<String>(corpusCities);
             vb_cities.getChildren().clear();
             vb_cities.getChildren().addAll(checkComboBox);
-            // when a city has been checked add it to hash set
-            checkComboBox.getCheckModel().getCheckedItems().addListener(new ListChangeListener<String>() {
-                public void onChanged(ListChangeListener.Change<? extends String> c) {
-                    cities.add(checkComboBox.getCheckModel().getCheckedItems().toString());
-                }
-            });
+            alert("The dictionary have been uploaded to memory.", Alert.AlertType.INFORMATION);
+
         }
         else{
             alert("Please enter a path to your index directory", Alert.AlertType.ERROR);
 
+        }
+    }
+
+    private void getCities(){
+        String checkedCities = checkComboBox.getCheckModel().getCheckedItems().toString();
+        if (checkedCities.length() == 2) return;
+        String cities = checkedCities.substring(1,checkedCities.length() - 1);
+        String [] splitedCities = cities.split(",");
+        for (String city: splitedCities) {
+            this.cities.add(city);
         }
     }
 

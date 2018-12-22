@@ -94,7 +94,7 @@ public class Model extends Observable {
         engine.setStemming(isStemming);
     }
 
-    public TreeSet<String> readDocumentsLanguages() {
+    public TreeSet<String> readDocumentsCities() {
         return engine.readDocumentsCities();
     }
 }
