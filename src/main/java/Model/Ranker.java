@@ -15,8 +15,13 @@ public class Ranker {
     private TreeMap<String,Double> ranksPerDocument; // <docId,rank>
 
 
-
-
+    /**
+     * This method rank each document in the corpus against the asked query.
+     * The query is represented in the hash map: termsForQueries
+     * @param termsForQueries
+     * @param cities
+     * @param queryId
+     */
     public void rank(HashMap<String,Integer> termsForQueries, HashSet<String> cities, String queryId){
         this.posting = new HashMap<>();
         this.ranksPerDocument = new TreeMap<>();
@@ -31,16 +36,12 @@ public class Ranker {
             int averageLength = Integer.valueOf(lineDetails[1]);
             bf.close();
             calculateBM25(termsForQueries,numberOfDocuments,averageLength);
-            // sort rank result in desanding  order
-            //HashMap<String,Double> rankFinal = new HashMap<>(ranksPerDocument);
-            //rankFinal.entrySet().stream().sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
-            //        .forEachOrdered(x -> ranksPerDocument.put(x.getKey(), x.getValue()));
             HashMap<String,Double> rankFinal = ranksPerDocument.entrySet()
                     .stream()
                     .sorted((Map.Entry.<String, Double>comparingByValue().reversed()))
                     .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
             int counter = 0;
-            Vector result = new Vector();
+            Vector<String> result = new Vector<>();
             // get the 50 documents with the highest rank
             for(Map.Entry<String,Double> entry: rankFinal.entrySet()){
                 if (counter == 50)
@@ -59,25 +60,28 @@ public class Ranker {
 
 
     /**
-     *
+     * This method retrieve all the documents which at least one the the cities inside the hashSet cities appears in them
      * @param cities
      */
     private void getCitiesDocuments(HashSet<String> cities){
         this.cityDocuments = new HashSet<>();
         try {
             HashSet<Integer> pointers = new HashSet<>();
-            BufferedReader bf = new BufferedReader(new FileReader(Engine.pathToSaveIndex + "\\cityDictionary"));
+            BufferedReader bf = new BufferedReader(new FileReader(Engine.pathToSaveIndex + "\\cityDictionary.txt"));
             String line = bf.readLine();
             while (line != null){
-                // get all the pointers of the cities which exist in @cities
-                int indexOf = line.indexOf("|");
-                String ptr = line.substring(indexOf + 1);
-                int integerPtr = Integer.valueOf(ptr);
-                pointers.add(integerPtr);
+                String city = line.substring(0,line.indexOf(","));
+                if (cities.contains(city)) {
+                    // get all the pointers of the cities which exist in @cities
+                    int indexOf = line.indexOf("|");
+                    String ptr = line.substring(indexOf + 1);
+                    int integerPtr = Integer.valueOf(ptr);
+                    pointers.add(integerPtr);
+                }
                 line = bf.readLine();
             }
             bf.close();
-            bf = new BufferedReader(new FileReader(Engine.pathToSaveIndex + "\\cityPosting"));
+            bf = new BufferedReader(new FileReader(Engine.pathToSaveIndex + "\\cityPosting.txt"));
             int lineNumber = 0;
             line = bf.readLine();
             while (pointers.size() > 0){
@@ -98,8 +102,8 @@ public class Ranker {
     }
 
     /**
-     *
-     * @param termsForQueries
+     * This method retrieve all the documents which contains at least one of the terms inside @param termsForQueries
+     * @param termsForQueries - all the terms in the query, saves is the format <term,tf>
      */
     private void getTermsPosting(HashMap<String,Integer> termsForQueries){
         try {
@@ -153,7 +157,13 @@ public class Ranker {
         }
     }
 
-    private void calculateBM25(HashMap<String, Integer> termsForQueries, double numberOfDocumets, double averageLength) {
+    /**
+     * This method calculate for each document in @posting the bm25 rank for the query
+     * @param termsForQueries - all the terms in the query, saves is the format <term,tf>
+     * @param numberOfDocuments - number of documents in the corpus
+     * @param averageLength - the average length of all documnets in the corpus
+     */
+    private void calculateBM25(HashMap<String, Integer> termsForQueries, double numberOfDocuments, double averageLength) {
         double rank = 0;
         double k = 2;
         double b = 0.75;
@@ -176,13 +186,16 @@ public class Ranker {
                 // for each term in the document
                 for (TermRankDetails termRankDetails:entry.getValue()) {
                     double partA = 0.0;
+                    // get the number of appearance of the term in the query
                     if (termsForQueries.containsKey(termRankDetails.getTerm().toLowerCase()))
                         partA = termsForQueries.get(termRankDetails.getTerm().toLowerCase());
                     else
                         partA = termsForQueries.get(termRankDetails.getTerm().toUpperCase());
+                    // get the number of appearance the term has in the document
                     double partB = ((k+1) * termRankDetails.getTF());
                     double partC = termRankDetails.getTF()+ k * (1-b + b *(docLength/averageLength));
-                    double partD = Math.log((numberOfDocumets + 1)/ (double) Engine.dictionary.get(termRankDetails.getTerm()).getDocumentFrequency());
+                    double partD = Math.log((numberOfDocuments + 1)/ (double) Engine.dictionary.get(termRankDetails.getTerm()).getDocumentFrequency());
+                    // calculate the bm25 formula
                     rank = rank + (partA * (partB/partC) * partD);
                 }
                 ranksPerDocument.put(entry.getKey(),rank);
@@ -194,14 +207,4 @@ public class Ranker {
         }
     }
 
-    public static <K, V extends Comparable<? super V>> HashMap<String, Double> sortByValue(Map<String, Double> map) {
-        List<Map.Entry<String, Double>> list = new ArrayList<>(map.entrySet());
-        list.sort(Map.Entry.comparingByValue());
-
-        HashMap<String, Double> result = new LinkedHashMap<>();
-        for (Map.Entry<String, Double> entry : list) {
-            result.put(entry.getKey(), entry.getValue());
-        }
-        return result;
-    }
 }
