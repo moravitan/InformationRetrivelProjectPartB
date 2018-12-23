@@ -1,9 +1,10 @@
 package Model;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import org.apache.commons.lang3.StringUtils;
+
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.TreeMap;
@@ -16,11 +17,7 @@ public class Searcher {
     HashMap<String,Integer> query;
     HashSet<String> cities;
     static TreeMap<Integer, Vector<String>> result;
-
-    public Searcher(Parse parse) {
-        this.parse = parse;
-        this.ranker = new Ranker();
-    }
+    boolean isSemantic;
 
     /**
      *
@@ -29,13 +26,15 @@ public class Searcher {
      */
     public TreeMap<Integer, Vector<String>> processQuery(String query, HashSet<String> cities, boolean isSemantic){
         this.cities=cities;
-       result = new TreeMap<Integer, Vector<String>>();
-       this.query = new HashMap<>();
+        result = new TreeMap<Integer, Vector<String>>();
+        this.query = new HashMap<>();
+        if(isSemantic)
+          query = handleSemantic(query);
         parse.parsing("111",query,false);
         this.query = parse.getTermsMapPerDocument();
         ranker.rank(this.query, cities, "111");
+        this.isSemantic = isSemantic;
         return result;
-
     }
 
     /**
@@ -59,6 +58,8 @@ public class Searcher {
                     queryContent = st.substring(8).replaceAll("\\s+$","");
                 }
                 if (!id.equals("") && !queryContent.equals("")) {
+                    if(isSemantic)
+                       queryContent =  handleSemantic(queryContent);
                     parse.parsing(id, queryContent, false);
                     query = parse.getTermsMapPerDocument();
                     ranker.rank(query, cities, id);
@@ -74,5 +75,34 @@ public class Searcher {
     }
 
 
+    private String handleSemantic(String query){
+        String APIQuery = query.replaceAll("\\s","+");
+        StringBuilder querySB = new StringBuilder(query);
+        try{
+            String urlContent = "https://api.datamuse.com/words?ml=" + APIQuery;
+            URL url = new URL(urlContent);
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            con.setRequestMethod("GET");
+            BufferedReader br =new BufferedReader(new InputStreamReader((con.getInputStream())));
+            String line = br.readLine();
+            while(line!=null){
+                int wordCounter =0;
+                while(line.length()>0){
+                    if(wordCounter==10)
+                        break;
+                    querySB.append(StringUtils.substringBetween(line,"\"word\":\"","\",\"score\""));
+                    wordCounter++;
+                    int index = line.indexOf('}');
+                    line = line.substring(index+  1);
+                }
+                line = br.readLine();
+            }
+            br.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        querySB.deleteCharAt(querySB.length()-1);
+        return querySB.toString();
+    }
 
 }
