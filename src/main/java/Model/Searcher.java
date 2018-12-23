@@ -17,6 +17,7 @@ public class Searcher {
     HashMap<String,Integer> query;
     HashSet<String> cities;
     static TreeMap<Integer, Vector<String>> result;
+    boolean isSemantic;
 
     /**
      *
@@ -32,6 +33,7 @@ public class Searcher {
         parse.parsing("111",query,false);
         this.query = parse.getTermsMapPerDocument();
         ranker.rank(this.query, cities, "111");
+        this.isSemantic = isSemantic;
         return result;
     }
 
