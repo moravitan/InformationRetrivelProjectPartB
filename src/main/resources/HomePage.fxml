@@ -35,7 +35,7 @@
             <Font size="13.0" />
          </font>
       </CheckBox>
-      <VBox fx:id="vb_cities" layoutX="238.0" layoutY="185.0" prefHeight="31.0" prefWidth="120.0" />
+      <VBox fx:id="vb_cities" layoutX="238.0" layoutY="185.0" prefHeight="31.0" prefWidth="193.0" />
       <Label layoutX="155.0" layoutY="185.0" prefHeight="31.0" prefWidth="83.0" text="Choose Cities:" />
    </children>
 </AnchorPane>
