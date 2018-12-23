@@ -84,32 +84,36 @@ public class Searcher {
 
 
     private static String handleSemantic(String query){
-        String APIQuery = query.replaceAll("\\s","+");
+        String [] queryWords = query.split(" ");
         StringBuilder querySB = new StringBuilder(query + " ");
-        try{
-            String urlContent = "https://api.datamuse.com/words?ml=" + APIQuery;
-            URL url = new URL(urlContent);
-            HttpURLConnection con = (HttpURLConnection) url.openConnection();
-            con.setRequestMethod("GET");
-            BufferedReader br =new BufferedReader(new InputStreamReader((con.getInputStream())));
-            String line = br.readLine();
-            while(line!=null){
-                int wordCounter =0;
-                while(line.length()>0){
-                    if(wordCounter==10)
-                        break;
-                    querySB.append(StringUtils.substringBetween(line,"\"word\":\"","\",\"score\"")+ " ");
-                    wordCounter++;
-                    int index = line.indexOf('}');
-                    line = line.substring(index+  1);
+        for (int i = 0; i <queryWords.length ; i++) {
+            String APIQuery = queryWords[i];
+            try{
+                String urlContent = "https://api.datamuse.com/words?ml=" + APIQuery;
+                URL url = new URL(urlContent);
+                HttpURLConnection con = (HttpURLConnection) url.openConnection();
+                con.setRequestMethod("GET");
+                BufferedReader br =new BufferedReader(new InputStreamReader((con.getInputStream())));
+                String line = br.readLine();
+                while(line!=null){
+                    int wordCounter =0;
+                    while(line.length()>0){
+                        if(wordCounter==10)
+                            break;
+                        querySB.append(StringUtils.substringBetween(line,"\"word\":\"","\",\"score\"")+ " ");
+                        wordCounter++;
+                        int index = line.indexOf('}');
+                        line = line.substring(index+  1);
+                    }
+                    line = br.readLine();
                 }
-                line = br.readLine();
+                br.close();
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-            br.close();
-        } catch (Exception e) {
-            e.printStackTrace();
         }
-        querySB.deleteCharAt(querySB.length()-1);
+        if (querySB.charAt(querySB.length()-1)== ' ')
+            querySB.deleteCharAt(querySB.length()-1);
         return querySB.toString();
     }
 
