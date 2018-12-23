@@ -6,6 +6,9 @@ import javafx.collections.ObservableList;
 import javafx.scene.control.ListView;
 import javafx.stage.Stage;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.TreeMap;
@@ -30,15 +33,15 @@ public class SearchResults  extends View{
     private void setResult() {
         int counter = 0;
         for(Map.Entry<Integer,Vector<String>> entry: View.result.entrySet()){
-            HashSet<String> resules = new HashSet<>();/*
+            HashSet<String> resules = new HashSet<>();
             try {
-                BufferedReader bf = new BufferedReader(new FileReader("C:\\Users\\איתן אביטן\\Desktop\\" + entry.getKey() + ".txt"));
+                BufferedReader bf = new BufferedReader(new FileReader("C:\\Users\\איתן אביטן\\Desktop\\" + "351" + ".txt"));
                 String line = bf.readLine();
                 while (line != null){
                     resules.add(line);
                     line = bf.readLine();
                 }
-                bf.close();*/
+                bf.close();
                 resultList.getItems().add("result for: " + entry.getKey());
                 ObservableList<String> dictionaryObservable = FXCollections.observableArrayList(entry.getValue());
                 for(String str : dictionaryObservable) {
@@ -48,9 +51,9 @@ public class SearchResults  extends View{
                 }
                 System.out.println("Number of matches for query: " + entry.getKey() + " " + counter) ;
                 counter = 0;
-  /*          } catch (IOException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
-            }*/
+            }
         }
     }
 

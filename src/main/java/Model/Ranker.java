@@ -36,11 +36,14 @@ public class Ranker {
             int averageLength = Integer.valueOf(lineDetails[1]);
             bf.close();
             calculateBM25(termsForQueries,numberOfDocuments,averageLength);
-            calculateInnerProduct();
+            //calculateInnerProduct();
             HashMap<String,Double> rankFinal = ranksPerDocument.entrySet()
                     .stream()
                     .sorted((Map.Entry.<String, Double>comparingByValue().reversed()))
                     .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
+            for(Map.Entry<String,Double> entry: rankFinal.entrySet()){
+                System.out.println("rank for: " + entry.getKey() + " " + entry.getValue());
+            }
             int counter = 0;
             Vector<String> result = new Vector<>();
             // get the 50 documents with the highest rank
@@ -166,7 +169,7 @@ public class Ranker {
      */
     private void calculateBM25(HashMap<String, Integer> termsForQueries, double numberOfDocuments, double averageLength) {
         double rank = 0;
-        double k = 2;
+        double k = 1.2;
         double b = 0.75;
         // for each document in posting
         for (Map.Entry<String,ArrayList<TermRankDetails>> entry:posting.entrySet()){
