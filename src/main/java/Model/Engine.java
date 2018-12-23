@@ -96,8 +96,8 @@ public class Engine {
         return indexer.dictionaryToString();
     }
 
-    public TreeMap<Integer, Vector<String>> searchSingleQuery(String query, HashSet<String> cities){
-        return searcher.processQuery(query,cities);
+    public TreeMap<Integer, Vector<String>> searchSingleQuery(String query, HashSet<String> cities,boolean isSemantic){
+        return searcher.processQuery(query,cities,isSemantic);
     }
 
     /**
@@ -105,8 +105,8 @@ public class Engine {
      * @param cities
      * @return all the documents which are relevant to the queries inside the query file
      */
-    public TreeMap<Integer, Vector<String>> searchMultipleQueries(File query, HashSet<String> cities){
-        return searcher.processQuery(query,cities);
+    public TreeMap<Integer, Vector<String>> searchMultipleQueries(File query, HashSet<String> cities, boolean isSemantic){
+        return searcher.processQuery(query,cities,isSemantic);
     }
 
     public HashMap<String, TermDetails> getDictionary() {

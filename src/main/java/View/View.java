@@ -33,6 +33,7 @@ public class View implements Observer {
     public javafx.scene.control.TextField pathToIndexDirectory;
     public javafx.scene.control.TextField singleQuery;
     public javafx.scene.control.CheckBox cb_stemming;
+    public javafx.scene.control.CheckBox cb_semantic;
     public javafx.scene.layout.VBox vb_cities;
     org.controlsfx.control.CheckComboBox<String> checkComboBox;
     public ImageView logo;
@@ -107,8 +108,7 @@ public class View implements Observer {
             alert("You did not enter any query", Alert.AlertType.ERROR);
         else {
             getCities();
-            controller.setIsStemming(cb_stemming.isSelected());
-            result = controller.processQuery(singleQuery.getText(), cities);
+            result = controller.processQuery(singleQuery.getText(), cities, cb_semantic.isSelected());
             if (result.size() == 0)
                 alert("Sorry, but we couldn't find results for your search", Alert.AlertType.INFORMATION);
             else
@@ -125,7 +125,7 @@ public class View implements Observer {
             alert("You did not enter any path", Alert.AlertType.ERROR);
         else {
             getCities();
-            result = controller.processQueryFile(new File(pathToQueriesFile.getText()), cities);
+            result = controller.processQueryFile(new File(pathToQueriesFile.getText()), cities, cb_semantic.isSelected());
             if (result.size() == 0)
                 alert("Sorry, but we couldn't find results for your search", Alert.AlertType.INFORMATION);
             else

@@ -77,12 +77,12 @@ public class Model extends Observable {
         return totalSecondsToIndex;
     }
 
-    public TreeMap<Integer, Vector<String>> processQuery(String queriesFile, HashSet<String> cities) {
-        return engine.searchSingleQuery(queriesFile,cities);
+    public TreeMap<Integer, Vector<String>> processQuery(String queriesFile, HashSet<String> cities, boolean isSemantic) {
+        return engine.searchSingleQuery(queriesFile,cities,isSemantic);
     }
 
-    public TreeMap<Integer, Vector<String>> processQuery(File queriesFile, HashSet<String> cities) {
-        return engine.searchMultipleQueries(queriesFile,cities);
+    public TreeMap<Integer, Vector<String>> processQuery(File queriesFile, HashSet<String> cities, boolean isSemantic) {
+        return engine.searchMultipleQueries(queriesFile,cities, isSemantic);
     }
 
 

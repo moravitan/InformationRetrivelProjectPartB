@@ -105,12 +105,12 @@ public class Controller extends Observable implements Observer {
         return model.getTotalTimeToIndex();
     }
 
-    public TreeMap<Integer, Vector<String>> processQuery(String query, HashSet<String> cities) {
-        return model.processQuery(query,cities);
+    public TreeMap<Integer, Vector<String>> processQuery(String query, HashSet<String> cities, boolean isSemantic) {
+        return model.processQuery(query,cities, isSemantic);
     }
 
-    public TreeMap<Integer, Vector<String>> processQueryFile(File queriesFile, HashSet<String> cities) {
-        return model.processQuery(queriesFile,cities);
+    public TreeMap<Integer, Vector<String>> processQueryFile(File queriesFile, HashSet<String> cities,boolean isSemantic) {
+        return model.processQuery(queriesFile,cities,isSemantic);
     }
 
     public void setPathToSaveIndex(String absolutePath) {

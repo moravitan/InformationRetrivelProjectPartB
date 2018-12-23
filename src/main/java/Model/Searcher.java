@@ -27,7 +27,7 @@ public class Searcher {
      * @param query
      * @param cities
      */
-    public TreeMap<Integer, Vector<String>> processQuery(String query, HashSet<String> cities){
+    public TreeMap<Integer, Vector<String>> processQuery(String query, HashSet<String> cities, boolean isSemantic){
         this.cities=cities;
        result = new TreeMap<Integer, Vector<String>>();
        this.query = new HashMap<>();
@@ -43,7 +43,7 @@ public class Searcher {
      * @param file
      * @param cities
      */
-    public TreeMap<Integer, Vector<String>> processQuery(File file, HashSet<String> cities){
+    public TreeMap<Integer, Vector<String>> processQuery(File file, HashSet<String> cities,boolean isSemantic){
         this.cities=cities;
         result = new TreeMap<Integer, Vector<String>>();
         query = new HashMap<>();
