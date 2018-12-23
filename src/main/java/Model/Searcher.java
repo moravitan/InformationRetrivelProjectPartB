@@ -81,7 +81,7 @@ public class Searcher {
                 if (!id.equals("") && !descContent.equals("")) {
                     if(isSemantic)
                        queryContent =  handleSemantic(queryContent);
-                    queryContent = queryContent + descContent;
+                    queryContent = queryContent + " " + descContent;
                     parse.parsing(id, queryContent, false);
                     query = parse.getTermsMapPerDocument();
                     ranker.rank(query, cities, id);
