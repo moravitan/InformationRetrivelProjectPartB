@@ -82,6 +82,8 @@ public class Engine {
             bf.close();
             // load the document hash map to memory as well
             setDocumentDetails();
+            // load stop word hash map to memory as well
+            setStopWords();
         } catch (IOException e) { }
     }
 
@@ -189,5 +191,15 @@ public class Engine {
             }
             bf.close();
         } catch (IOException e) { }
+    }
+
+    private void setStopWords() throws IOException {
+        File file = new File(pathToSaveIndex + "/stop_words.txt");
+        BufferedReader bf = new BufferedReader(new FileReader(file));
+        String line = bf.readLine();
+        while (line != null) {
+            ReadFile.stopWords.add(line);
+            line = bf.readLine();
+        }
     }
 }
