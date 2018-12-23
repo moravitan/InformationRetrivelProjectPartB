@@ -190,7 +190,6 @@ public class Parse {
         else{
             termsMapPerDocument = new HashMap<>();
             parsingLine(docText);
-
         }
     }
 
@@ -344,6 +343,9 @@ public class Parse {
                     //Between 1 1/2 and number || Between 1 Million and number
                     if (i + 4 < wordsInDoc.length && (isInteger(wordsInDoc[i + 2],false) || numbersDictionary.containsKey(wordsInDoc[i + 2])) && wordsInDoc[i + 3].equalsIgnoreCase("and") && isInteger(wordsInDoc[i + 4],false)) {
                         numberTerm.add(new StringBuilder(wordsInDoc[i + 1]));
+                        // add million to the dictionary ADD HERE!!!!
+                        if (numbersDictionary.containsKey(wordsInDoc[i + 2]))
+                            updateTerm(wordsInDoc[i+2]);
                         numberTerm.add(new StringBuilder(wordsInDoc[i + 2]));
                         StringBuilder term1 = parseNumbers(false, numberTerm, isInteger(wordsInDoc[i + 2],false));
                         numberTerm.clear();
@@ -413,6 +415,9 @@ public class Parse {
                             if (numbersDictionary.containsKey(beforeMakaf) || beforeMakaf.matches(numberMakaf)) {
                                 numberTerm.add(new StringBuilder(wordsInDoc[i]));
                                 numberTerm.add(new StringBuilder(beforeMakaf));
+                                if (numbersDictionary.containsKey(beforeMakaf))
+                                    // add million to dictionary ADD HERE!!!!!!
+                                    updateTerm(beforeMakaf);
                                 StringBuilder term1 = parseNumbers(false, numberTerm, beforeMakaf.contains("/"));
                                 numberTerm.clear();
                                 if (isInteger(afterMakaf,false)) {
@@ -464,6 +469,8 @@ public class Parse {
                         StringBuilder finalTerm = parseNumbers(true, numberTerm, twoNumsCells);
                         numberTerm.clear();
                         updateTerm(finalTerm.toString());
+                        // add million/billion/trillion to the dictionary ADD HERE!!!
+                        updateTerm(wordsInDoc[i+1]);
                         i = i + 1;
                         continue;
                     }
@@ -499,6 +506,8 @@ public class Parse {
                         StringBuilder finalTerm = parseNumbers(false, numberTerm, twoNumsCells);
                         numberTerm.clear();
                         updateTerm(finalTerm.toString());
+                        // add grams/kilograms/tons to dictionary ADD HERE!!!!!
+                        updateTerm(wordsInDoc[i+1]);
                         i = i + 1;
                         continue;
                     }
@@ -521,6 +530,9 @@ public class Parse {
                     // number million/billion/trillion/fraction grams/kilograms/tons
                     if (i + 2 < wordsInDoc.length && !isDollar && weightDictionary.containsKey(wordsInDoc[i + 2])) {
                         String currWord = Character.toUpperCase(wordsInDoc[i+1].charAt(0)) + wordsInDoc[i+1].substring(1);
+                        if (numbersDictionary.containsKey(currWord))
+                            // add million/billion/trillion to dictionary ADD HERE!!!
+                            updateTerm(currWord);
                         if (numbersDictionary.containsKey(currWord) || twoNumsCells) {
                             numberTerm.add(numTerm);
                             numberTerm.add(new StringBuilder(currWord));
@@ -539,6 +551,8 @@ public class Parse {
                         numberTerm.add(numTerm);
                         numberTerm.add(new StringBuilder(wordsInDoc[i + 1]));
                         //update dic with Dollars/Dollar/dollar/dollars
+                        updateTerm(wordsInDoc[i + 3]);
+                        // add million/billion/trillion
                         updateTerm(wordsInDoc[i + 1]);
                         //call to func which deal with prices
                         StringBuilder finalTerm = parseNumbers(true, numberTerm, twoNumsCells);
@@ -591,6 +605,9 @@ public class Parse {
                                 numberTerm.add(new StringBuilder(afterMakaf));
                                 //1-1 1/2 || 1-2 Million
                                 if (i + 1 < wordsInDoc.length && (isInteger(wordsInDoc[i + 1],false) || numbersDictionary.containsKey(wordsInDoc[i + 1]))) {
+                                    if (numbersDictionary.containsKey(wordsInDoc[i + 1]))
+                                        // add million to dictionary ADD HERE
+                                        updateTerm(wordsInDoc[i+1]);
                                     numberTerm.add(new StringBuilder(wordsInDoc[i + 1]));
                                     twoNumsCells = true;
                                     i = i + 1;
