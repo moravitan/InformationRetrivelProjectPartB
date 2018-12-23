@@ -40,6 +40,9 @@ public class Ranker {
                     .stream()
                     .sorted((Map.Entry.<String, Double>comparingByValue().reversed()))
                     .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
+            for(Map.Entry<String,Double> entry: rankFinal.entrySet()){
+                System.out.println("rank for: " + entry.getKey() + " " + entry.getValue());
+            }
             int counter = 0;
             Vector<String> result = new Vector<>();
             // get the 50 documents with the highest rank
@@ -82,7 +85,7 @@ public class Ranker {
             }
             bf.close();
             bf = new BufferedReader(new FileReader(Engine.pathToSaveIndex + "\\cityPosting.txt"));
-            int lineNumber = 0;
+            int lineNumber = 1;
             line = bf.readLine();
             while (pointers.size() > 0){
                 if (pointers.contains(lineNumber)){
@@ -122,7 +125,7 @@ public class Ranker {
                 char c = Character.toUpperCase(entry.getKey().charAt(0));
                 BufferedReader bf = new BufferedReader(new FileReader(Engine.pathToSaveIndex + "\\posting" + c + ".txt"));
                 String line = bf.readLine();
-                int lineNumber = 0;
+                int lineNumber = 1;
                 while(true){
                     if (lineNumber == ptr){
                         while (line.length() > 0){
@@ -165,7 +168,7 @@ public class Ranker {
      */
     private void calculateBM25(HashMap<String, Integer> termsForQueries, double numberOfDocuments, double averageLength) {
         double rank = 0;
-        double k = 2;
+        double k = 1.2;
         double b = 0.75;
         // for each document in posting
         for (Map.Entry<String,ArrayList<TermRankDetails>> entry:posting.entrySet()){

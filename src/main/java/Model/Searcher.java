@@ -96,7 +96,7 @@ public class Searcher {
             while(line!=null){
                 int wordCounter =0;
                 while(line.length()>0){
-                    if(wordCounter==10)
+                    if(wordCounter==20)
                         break;
                     querySB.append(StringUtils.substringBetween(line,"\"word\":\"","\",\"score\""));
                     wordCounter++;

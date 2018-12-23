@@ -17,4 +17,5 @@ public class testMor {
         hashMap.put("aa",2);
 
     }
+
 }
