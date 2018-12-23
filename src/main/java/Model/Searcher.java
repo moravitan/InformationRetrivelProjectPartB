@@ -85,6 +85,7 @@ public class Searcher {
 
     private static String handleSemantic(String query){
         String [] queryWords = query.split(" ");
+        HashSet<String> APIwords = new HashSet<>();
         StringBuilder querySB = new StringBuilder(query + " ");
         for (int i = 0; i <queryWords.length ; i++) {
             String APIQuery = queryWords[i];
@@ -98,13 +99,28 @@ public class Searcher {
                 while(line!=null){
                     int wordCounter =0;
                     while(line.length()>0){
-                        if(wordCounter==10)
+                        if(wordCounter==5)
                             break;
-                        querySB.append(StringUtils.substringBetween(line,"\"word\":\"","\",\"score\"")+ " ");
+                        String APIterm = StringUtils.substringBetween(line,"\"word\":\"","\",\"score\"");
+                        int indexOfWhitespace = APIterm.indexOf(' ');
+                        while (indexOfWhitespace!=-1){
+                            APIwords.add(APIterm.substring(0,indexOfWhitespace));
+                            wordCounter++;
+                            APIterm = APIterm.substring(indexOfWhitespace+1);
+                            indexOfWhitespace = APIterm.indexOf(' ');
+                        }
+
+                        APIwords.add(APIterm);
+                        //querySB.append(StringUtils.substringBetween(line,"\"word\":\"","\",\"score\"")+ " ");
                         wordCounter++;
+
                         int index = line.indexOf('}');
                         line = line.substring(index+  1);
                     }
+                    for (String str: APIwords) {
+                        querySB.append(str+ " ");
+                    }
+                    APIwords.clear();
                     line = br.readLine();
                 }
                 br.close();
