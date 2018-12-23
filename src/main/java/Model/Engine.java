@@ -48,6 +48,7 @@ public class Engine {
             indexer.writeDataToDisk();
             // creating inverted index
             indexer.createInvertedIndex();
+            //setPathToSaveIndex(pathToSaveIndex);
         } catch (Exception e) {
             e.printStackTrace();
         }

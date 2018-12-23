@@ -6,6 +6,7 @@ import javafx.collections.ObservableList;
 import javafx.scene.control.ListView;
 import javafx.stage.Stage;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.Vector;
@@ -27,12 +28,29 @@ public class SearchResults  extends View{
     }
 
     private void setResult() {
+        int counter = 0;
         for(Map.Entry<Integer,Vector<String>> entry: View.result.entrySet()){
-            resultList.getItems().add("result for: " + entry.getKey());
-            ObservableList<String> dictionaryObservable = FXCollections.observableArrayList(entry.getValue());
-            for(String str : dictionaryObservable)
-                resultList.getItems().add(str);
-
+            HashSet<String> resules = new HashSet<>();/*
+            try {
+                BufferedReader bf = new BufferedReader(new FileReader("C:\\Users\\איתן אביטן\\Desktop\\" + entry.getKey() + ".txt"));
+                String line = bf.readLine();
+                while (line != null){
+                    resules.add(line);
+                    line = bf.readLine();
+                }
+                bf.close();*/
+                resultList.getItems().add("result for: " + entry.getKey());
+                ObservableList<String> dictionaryObservable = FXCollections.observableArrayList(entry.getValue());
+                for(String str : dictionaryObservable) {
+                    resultList.getItems().add(str);
+                    if (resules.contains(str))
+                        counter++;
+                }
+                System.out.println("Number of matches for query: " + entry.getKey() + " " + counter) ;
+                counter = 0;
+  /*          } catch (IOException e) {
+                e.printStackTrace();
+            }*/
         }
     }
 

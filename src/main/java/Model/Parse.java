@@ -215,8 +215,16 @@ public class Parse {
                 wordsInDoc[0] = wordsInDoc[0].substring(0, indexOfDot);
         } else {
             if (wordsInDoc[wordsInDoc.length - 1].length() < 1) {
-                wordsInDoc[wordsInDoc.length - 2] = wordsInDoc[wordsInDoc.length - 2].substring(0, wordsInDoc[wordsInDoc.length - 2].length() - 1);
-            } else {
+                int i = 2;
+                while (true) {
+                    int indexOfDot = wordsInDoc[wordsInDoc.length - i].indexOf('.');
+                    if (indexOfDot != -1) {
+                        wordsInDoc[wordsInDoc.length - i] = wordsInDoc[wordsInDoc.length - i].substring(0, wordsInDoc[wordsInDoc.length - i].length() - 1);
+                        break;
+                    }
+                    i--;
+                }
+            } else if (wordsInDoc[wordsInDoc.length - 1].endsWith(".")){
                 wordsInDoc[wordsInDoc.length - 1] = wordsInDoc[wordsInDoc.length - 1].substring(0, wordsInDoc[wordsInDoc.length - 1].length() - 1);
             }
         }

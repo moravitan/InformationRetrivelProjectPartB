@@ -36,7 +36,7 @@ public class Ranker {
             int averageLength = Integer.valueOf(lineDetails[1]);
             bf.close();
             calculateBM25(termsForQueries,numberOfDocuments,averageLength);
-            //calculateInnerProduct();
+            calculateInnerProduct();
             HashMap<String,Double> rankFinal = ranksPerDocument.entrySet()
                     .stream()
                     .sorted((Map.Entry.<String, Double>comparingByValue().reversed()))
@@ -83,7 +83,7 @@ public class Ranker {
             }
             bf.close();
             bf = new BufferedReader(new FileReader(Engine.pathToSaveIndex + "\\cityPosting.txt"));
-            int lineNumber = 0;
+            int lineNumber = 1;
             line = bf.readLine();
             while (pointers.size() > 0){
                 if (pointers.contains(lineNumber)){
@@ -123,7 +123,7 @@ public class Ranker {
                 char c = Character.toUpperCase(entry.getKey().charAt(0));
                 BufferedReader bf = new BufferedReader(new FileReader(Engine.pathToSaveIndex + "\\posting" + c + ".txt"));
                 String line = bf.readLine();
-                int lineNumber = 0;
+                int lineNumber = 1;
                 while(true){
                     if (lineNumber == ptr){
                         while (line.length() > 0){
@@ -204,7 +204,7 @@ public class Ranker {
                 double termWeight = termRankDetails.getTF()/docLength;
                 rank = rank + termWeight;
             }
-            // get the previous rank in the ranksPerDocument hashmap
+            // get the previous rank in the ranksPerDocument hash map
             double previousRank = ranksPerDocument.get(entry.getKey());
             ranksPerDocument.put(entry.getKey(),rank + previousRank);
             rank = 0.0;
