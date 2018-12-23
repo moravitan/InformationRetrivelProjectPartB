@@ -104,16 +104,18 @@ public class Searcher {
                         String APIterm = StringUtils.substringBetween(line,"\"word\":\"","\",\"score\"");
                         int indexOfWhitespace = APIterm.indexOf(' ');
                         while (indexOfWhitespace!=-1){
-                            APIwords.add(APIterm.substring(0,indexOfWhitespace));
-                            wordCounter++;
+                            if (!APIwords.contains(APIterm.substring(0,indexOfWhitespace))) {
+                                APIwords.add(APIterm.substring(0, indexOfWhitespace));
+                                wordCounter++;
+                            }
                             APIterm = APIterm.substring(indexOfWhitespace+1);
                             indexOfWhitespace = APIterm.indexOf(' ');
                         }
-
-                        APIwords.add(APIterm);
-                        //querySB.append(StringUtils.substringBetween(line,"\"word\":\"","\",\"score\"")+ " ");
-                        wordCounter++;
-
+                        if (!APIwords.contains(APIterm)) {
+                            APIwords.add(APIterm);
+                            //querySB.append(StringUtils.substringBetween(line,"\"word\":\"","\",\"score\"")+ " ");
+                            wordCounter++;
+                        }
                         int index = line.indexOf('}');
                         line = line.substring(index+  1);
                     }
