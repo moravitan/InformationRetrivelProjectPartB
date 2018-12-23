@@ -35,7 +35,7 @@ public class SearchResults  extends View{
         for(Map.Entry<Integer,Vector<String>> entry: View.result.entrySet()){
             HashSet<String> resules = new HashSet<>();
             try {
-                BufferedReader bf = new BufferedReader(new FileReader("C:\\Users\\איתן אביטן\\Desktop\\" + "351" + ".txt"));
+                BufferedReader bf = new BufferedReader(new FileReader("C:\\Users\\איתן אביטן\\Desktop\\" + entry.getKey() + ".txt"));
                 String line = bf.readLine();
                 while (line != null){
                     resules.add(line);
