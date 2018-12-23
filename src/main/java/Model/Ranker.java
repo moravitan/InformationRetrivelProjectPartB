@@ -36,7 +36,7 @@ public class Ranker {
             int averageLength = Integer.valueOf(lineDetails[1]);
             bf.close();
             calculateBM25(termsForQueries,numberOfDocuments,averageLength);
-            //calculateInnerProduct();
+            calculateInnerProduct();
             HashMap<String,Double> rankFinal = ranksPerDocument.entrySet()
                     .stream()
                     .sorted((Map.Entry.<String, Double>comparingByValue().reversed()))
