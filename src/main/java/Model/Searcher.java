@@ -20,6 +20,15 @@ public class Searcher {
     static TreeMap<Integer, Vector<String>> result;
 
     /**
+     * constructor
+     * @param parse
+     */
+    public Searcher(Parse parse) {
+        this.parse = parse;
+        this.ranker = new Ranker();
+    }
+
+    /**
      *
      * @param query
      * @param cities
