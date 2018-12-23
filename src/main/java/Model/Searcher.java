@@ -84,9 +84,9 @@ public class Searcher {
     }
 
 
-    private String handleSemantic(String query){
+    private static String handleSemantic(String query){
         String APIQuery = query.replaceAll("\\s","+");
-        StringBuilder querySB = new StringBuilder(query);
+        StringBuilder querySB = new StringBuilder(query + " ");
         try{
             String urlContent = "https://api.datamuse.com/words?ml=" + APIQuery;
             URL url = new URL(urlContent);
@@ -97,9 +97,9 @@ public class Searcher {
             while(line!=null){
                 int wordCounter =0;
                 while(line.length()>0){
-                    if(wordCounter==20)
+                    if(wordCounter==10)
                         break;
-                    querySB.append(StringUtils.substringBetween(line,"\"word\":\"","\",\"score\""));
+                    querySB.append(StringUtils.substringBetween(line,"\"word\":\"","\",\"score\"")+ " ");
                     wordCounter++;
                     int index = line.indexOf('}');
                     line = line.substring(index+  1);
