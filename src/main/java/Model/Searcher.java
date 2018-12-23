@@ -58,6 +58,7 @@ public class Searcher {
             String st;
             String id="";
             String queryContent="";
+            String descContent = "";
             while ((st = br.readLine()) != null ){
                 if (st.contains("<num> Number:")) {
                     id = st.substring(14, 17);
@@ -65,14 +66,27 @@ public class Searcher {
                 if (st.contains("<title> ")){
                     queryContent = st.substring(8).replaceAll("\\s+$","");
                 }
-                if (!id.equals("") && !queryContent.equals("")) {
+                if (st.contains("<desc> ")){
+                    st= br.readLine();
+                    descContent = st;
+                    st = br.readLine();
+                    while(!st.contains("<narr>")){
+                        descContent =  descContent +" "+ st;
+                        st = br.readLine();
+                    }
+                    descContent = descContent.replaceAll("\\s+$","");
+                }
+
+                if (!id.equals("") && !descContent.equals("")) {
                     if(isSemantic)
                        queryContent =  handleSemantic(queryContent);
+                    queryContent = queryContent + descContent;
                     parse.parsing(id, queryContent, false);
                     query = parse.getTermsMapPerDocument();
                     ranker.rank(query, cities, id);
                     id = "";
                     queryContent = "";
+                    descContent = "";
                 }
 
             }
