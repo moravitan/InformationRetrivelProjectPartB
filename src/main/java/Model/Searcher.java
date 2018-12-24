@@ -85,6 +85,7 @@ public class Searcher {
                     parse.parsing(id, queryContent, false);
                     query = parse.getTermsMapPerDocument();
                     ranker.rank(query, cities, id);
+                    System.out.println(id + " done");
                     id = "";
                     queryContent = "";
                     descContent = "";
