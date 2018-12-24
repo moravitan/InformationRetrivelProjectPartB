@@ -103,6 +103,9 @@ public class Searcher {
         StringBuilder querySB = new StringBuilder(query + " ");
         for (int i = 0; i <queryWords.length ; i++) {
             String APIQuery = queryWords[i];
+            int indexOfMakaf = APIQuery.indexOf('-');
+            if(indexOfMakaf!=-1)
+                APIQuery = APIQuery.replaceAll("-", "+");
             try{
                 String urlContent = "https://api.datamuse.com/words?ml=" + APIQuery;
                 URL url = new URL(urlContent);
