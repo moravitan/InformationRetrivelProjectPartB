@@ -41,7 +41,7 @@ public class Parse {
 
 
     /**
-     *
+     * Constructor
      * @param isStemming - boolean indicator to know if need to stem or not
      * @param indexer -
      */

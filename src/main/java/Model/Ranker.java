@@ -37,13 +37,20 @@ public class Ranker {
             bf.close();
             calculateBM25(termsForQueries,numberOfDocuments,averageLength);
             calculateInnerProduct();
+
             HashMap<String,Double> rankFinal = ranksPerDocument.entrySet()
                     .stream()
                     .sorted((Map.Entry.<String, Double>comparingByValue().reversed()))
                     .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
+
 /*            for(Map.Entry<String,Double> entry: rankFinal.entrySet()){
                 System.out.println("rank for: " + entry.getKey() + " " + entry.getValue());
             }*/
+
+            for(Map.Entry<String,Double> entry: rankFinal.entrySet()){
+                System.out.println("rank for: " + entry.getKey() + " " + entry.getValue());
+            }
+
             int counter = 0;
             Vector<String> result = new Vector<>();
             // get the 50 documents with the highest rank
