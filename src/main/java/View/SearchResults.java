@@ -31,11 +31,12 @@ public class SearchResults  extends View{
     }
 
     private void setResult() {
+        int totalCounter = 0;
         int counter = 0;
         for(Map.Entry<Integer,Vector<String>> entry: View.result.entrySet()){
             HashSet<String> resules = new HashSet<>();
             try {
-                BufferedReader bf = new BufferedReader(new FileReader("C:\\Users\\איתן אביטן\\Desktop\\" + entry.getKey() + ".txt"));
+                BufferedReader bf = new BufferedReader(new FileReader("C:\\Users\\איתן אביטן\\Downloads\\לימודים\\אחזור מידע\\פרויקט מנוע חיפוש\\spliter qrels\\" + entry.getKey() + ".txt"));
                 String line = bf.readLine();
                 while (line != null){
                     resules.add(line);
@@ -46,8 +47,10 @@ public class SearchResults  extends View{
                 ObservableList<String> dictionaryObservable = FXCollections.observableArrayList(entry.getValue());
                 for(String str : dictionaryObservable) {
                     resultList.getItems().add(str);
-                    if (resules.contains(str))
+                    if (resules.contains(str)) {
                         counter++;
+                        totalCounter++;
+                    }
                 }
                 System.out.println("Number of matches for query: " + entry.getKey() + " " + counter) ;
                 counter = 0;
@@ -55,6 +58,8 @@ public class SearchResults  extends View{
                 e.printStackTrace();
             }
         }
+        System.out.println("Number of total matches : " + totalCounter) ;
+
     }
 
 }

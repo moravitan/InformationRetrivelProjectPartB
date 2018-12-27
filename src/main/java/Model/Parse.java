@@ -1037,6 +1037,7 @@ public class Parse {
 
     public void setStemming(boolean stemming) {
         isStemming = stemming;
+        this.stemmer = new Stemmer();
     }
 
     public void setIndexer(Indexer indexer) {

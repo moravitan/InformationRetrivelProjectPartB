@@ -55,6 +55,7 @@ public class Ranker {
             }
             // update search map in the rank result
             Searcher.result.put(Integer.valueOf(queryId),result);
+            System.out.println(queryId + " done");
         } catch (IOException e) {
             e.printStackTrace();
         }

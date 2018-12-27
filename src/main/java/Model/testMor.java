@@ -5,7 +5,8 @@ import java.io.*;
 public class testMor {
 
     public static void main(String[] args) {
-        splitQruels();
+        testEngine();
+//        splitQruels();
 
     }
 

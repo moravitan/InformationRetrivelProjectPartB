@@ -294,10 +294,10 @@ public class Indexer {
                 writer.write(entry.getKey() + "," + entry.getValue().getLength() + "," + entry.getValue().getFileName() + "," +
                         entry.getValue().getLanguage() + "," + entry.getValue().getDate() + "," +
                         entry.getValue().getNumberOfDistinctWords() + "," + entry.getValue().getMaxTermFrequency() + ",");
-/*                writer.write("{");
+                writer.write("{");
                 for (Map.Entry<Integer,String> entry1:entry.getValue().getTopFiveEntities().entrySet()){
                     writer.write(entry1.getValue() + ":" + entry1.getKey() + ",");
-                }*/
+                }
                 totalLength+=entry.getValue().getLength();
 //                writer.write("}");
                 writer.write("\n");

@@ -186,6 +186,7 @@ public class Engine {
                 documentDetails.setLength(Integer.valueOf(details[1]));
                 documentDetails.setNumberOfDistinctWords(Integer.valueOf(details[5]));
                 documentDetails.setMaxTermFrequency(Integer.valueOf(details[6]));
+
                 mapOfDocs.put(details[0], documentDetails);
                 line = bf.readLine();
             }
