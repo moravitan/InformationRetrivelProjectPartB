@@ -40,9 +40,9 @@ public class Ranker {
                     .stream()
                     .sorted((Map.Entry.<String, Double>comparingByValue().reversed()))
                     .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
-            for(Map.Entry<String,Double> entry: rankFinal.entrySet()){
+/*            for(Map.Entry<String,Double> entry: rankFinal.entrySet()){
                 System.out.println("rank for: " + entry.getKey() + " " + entry.getValue());
-            }
+            }*/
             int counter = 0;
             Vector<String> result = new Vector<>();
             // get the 50 documents with the highest rank
@@ -54,6 +54,7 @@ public class Ranker {
             }
             // update search map in the rank result
             Searcher.result.put(Integer.valueOf(queryId),result);
+            System.out.println(queryId + " done");
         } catch (IOException e) {
             e.printStackTrace();
         }

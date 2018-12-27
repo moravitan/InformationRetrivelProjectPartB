@@ -1,15 +1,14 @@
 package Model;
 
 import org.apache.commons.lang3.StringUtils;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
 
 import java.io.*;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.file.Files;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.TreeMap;
+import java.util.Vector;
 
 public class Searcher {
 
@@ -18,6 +17,7 @@ public class Searcher {
     HashMap<String,Integer> query;
     HashSet<String> cities;
     static TreeMap<Integer, Vector<String>> result;
+    boolean isSemantic;
 
     /**
      * constructor
@@ -42,6 +42,7 @@ public class Searcher {
         parse.parsing("111",query,false);
         this.query = parse.getTermsMapPerDocument();
         ranker.rank(this.query, cities, "111");
+        this.isSemantic = isSemantic;
         return result;
     }
 

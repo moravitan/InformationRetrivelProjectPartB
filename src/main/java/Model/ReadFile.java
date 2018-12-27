@@ -93,8 +93,6 @@ public class ReadFile{
             stopWords.add(line);
             line = bf.readLine();
         }
-
-
     }
     /**
      * This method run recursively over the given folder
