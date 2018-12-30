@@ -1,6 +1,6 @@
 package Model;
 
-import java.util.TreeMap;
+import java.util.LinkedHashMap;
 
 /**
  * This class saves all the details of each document in the corpus
@@ -13,7 +13,7 @@ public class DocumentDetails {
     private int maxTermFrequency;
     private int numberOfDistinctWords;
     private int length;
-    private TreeMap<Integer,String> topFiveEntities;
+    private LinkedHashMap<String,Integer> topFiveEntities;
 
 
 
@@ -52,7 +52,7 @@ public class DocumentDetails {
         return numberOfDistinctWords;
     }
 
-    public TreeMap<Integer, String> getTopFiveEntities() {
+    public LinkedHashMap<String, Integer> getTopFiveEntities() {
         return topFiveEntities;
     }
 
@@ -79,7 +79,7 @@ public class DocumentDetails {
         this.numberOfDistinctWords = numberOfDistinctWords;
     }
 
-    public void setTopFiveEntities(TreeMap<Integer, String> topFiveEntities) {
+    public void setTopFiveEntities(LinkedHashMap<String, Integer> topFiveEntities) {
         this.topFiveEntities = topFiveEntities;
     }
 

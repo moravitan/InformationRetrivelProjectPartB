@@ -15,7 +15,9 @@ public class Parse {
     Stemmer stemmer;
     HashMap <String, Integer> termsMapPerDocument; // <Term, TF>
     // CHANGED HERE
-    TreeMap<Integer,String> topFiveEntities; // <tf, Term>
+    //TreeMap<String,Integer> topFiveEntities; // <tf, Term>
+    //String minFrequncyTerm = "";
+    //int minFrequency = 1;
     ///////////////
     HashMap<String, ArrayList<Integer>> citiesMap; // <CityName, listOfPositions>
     HashMap<String,String> monthDictionary;
@@ -47,17 +49,11 @@ public class Parse {
      */
     public Parse(boolean isStemming, Indexer indexer) {
         this.termsMapPerDocument = new HashMap<>();
-        this.topFiveEntities = new TreeMap<>(new Comparator<Integer>() {
-            @Override
-            public int compare(Integer o1, Integer o2) {
-                return o2.compareTo(o1);
-            }
-        });
+        //this.topFiveEntities = new TreeMap<>();
         this.citiesMap = new HashMap<>();
         this.indexer = indexer;
         this.isStemming = isStemming;
-        if (isStemming)
-            stemmer = new Stemmer();
+        this.stemmer = new Stemmer();
         // create and fill dictionaries
         this.monthDictionary = new HashMap<>();
         this.numbersDictionary = new HashMap<>();
@@ -176,7 +172,7 @@ public class Parse {
             ReadFile.mapOfDocs.get(docId).setNumberOfDistinctWords(numberOfDistinctWords);
             ReadFile.mapOfDocs.get(docId).setLength(length);
             ////////CHANGED HERE
-            ReadFile.mapOfDocs.get(docId).setTopFiveEntities(topFiveEntities);
+            //ReadFile.mapOfDocs.get(docId).setTopFiveEntities(topFiveEntities);
             /////////////
             indexer.setAll(docId, termsMapPerDocument, citiesMap);
             maxTermFrequency = 0;
@@ -185,7 +181,7 @@ public class Parse {
             length = 0;
             termsMapPerDocument = new HashMap<>();
             citiesMap = new HashMap<>();
-            topFiveEntities = new TreeMap<>();
+            //topFiveEntities = new TreeMap<>();
         }
         else{
             termsMapPerDocument = new HashMap<>();
@@ -1007,37 +1003,44 @@ public class Parse {
                 citiesMap.get(key.toUpperCase()).add(position);
             }
         }
-        if (Character.isUpperCase(key.charAt(0)))
-            setTopFiveEntities(key,termsMapPerDocument.get(key));
+/*        if (Character.isUpperCase(key.charAt(0)))
+            setTopFiveEntities(key.toUpperCase(),termsMapPerDocument.get(key));*/
     }
 
     /**
      * This method save the top five terms which appear in upper case and their tf
-     * @param term
-     * @param tf
+     * @param
+     * @param
      */
-    private void setTopFiveEntities(String term,int tf) {
-        if (topFiveEntities.size() <= 5)
-            topFiveEntities.put(tf,term);
-        if (tf < topFiveEntities.lastKey())
-            return;
-        else{
-            int needToDelete = 0;
-            for(Map.Entry<Integer,String> entry : topFiveEntities.entrySet()){
-                // if the new tf is bigger from one of the keys in the topFiveEntities dictionary
-                // save the key in a temporary parameter
-                if (entry.getKey() < tf){
-                    needToDelete = entry.getKey();
-                }
+ /*   private void setTopFiveEntities(String term,int tf) {
+        if (topFiveEntities.size() < 5) {
+            topFiveEntities.put(term, tf);
+            if (tf <= minFrequency) {
+                minFrequncyTerm = term;
+                minFrequency = tf;
             }
-            topFiveEntities.remove(needToDelete);
-            topFiveEntities.put(tf,term);
+            return;
         }
-    }
+        if (tf <= minFrequency)
+            return;
+        if (topFiveEntities.containsKey(term)){
+            topFiveEntities.put(term,tf);
+            return;
+        }
+        TreeMap<String,Integer> sorted = new TreeMap<>(new Comparator<String>() {
+            @Override
+            public int compare(String o1, String o2) {
+                return topFiveEntities.get(o1).compareTo(topFiveEntities.get(o2));
+            }
+        });
+        sorted.putAll(topFiveEntities);
+        minFrequency = sorted.get(sorted.firstKey());
+        topFiveEntities.remove(sorted.firstKey());
+        topFiveEntities.put(term, tf);
+    }*/
 
     public void setStemming(boolean stemming) {
         isStemming = stemming;
-        this.stemmer = new Stemmer();
     }
 
     public void setIndexer(Indexer indexer) {

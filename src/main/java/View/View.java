@@ -112,7 +112,7 @@ public class View implements Observer {
             if (result.size() == 0)
                 alert("Sorry, but we couldn't find results for your search", Alert.AlertType.INFORMATION);
             else
-                newStage("SearchResults.fxml", "", searchResults, 281, 400, controller);
+                newStage("SearchResults.fxml", "", searchResults, 388, 416, controller);
         }
     }
 
@@ -129,7 +129,7 @@ public class View implements Observer {
             if (result.size() == 0)
                 alert("Sorry, but we couldn't find results for your search", Alert.AlertType.INFORMATION);
             else
-                newStage("SearchResults.fxml", "", searchResults, 281, 400, controller);
+                newStage("SearchResults.fxml", "", searchResults, 388, 416, controller);
 
         }
     }
@@ -168,6 +168,10 @@ public class View implements Observer {
         if (pathToIndexDirectory.getText().length() > 0) {
             controller.setIsStemming(cb_stemming.isSelected());
             controller.setPathToSaveIndex(pathToIndexDirectory.getText());
+            if (!controller.checkValidPath()) {
+                alert("The path you entered isn't a valid path", Alert.AlertType.ERROR);
+                return;
+            }
             controller.uploadDictionaryToMem();
             btn_loadQuery.setDisable(false);
             btn_searchSingleQuery.setDisable(false);

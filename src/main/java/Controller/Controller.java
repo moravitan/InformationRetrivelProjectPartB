@@ -127,4 +127,8 @@ public class Controller extends Observable implements Observer {
         ObservableList<String> docCitiesObservable = FXCollections.observableArrayList(docCities);
         return docCitiesObservable;
     }
+
+    public boolean checkValidPath(){
+        return model.checkValidPath();
+    }
 }

@@ -65,8 +65,9 @@ public class Engine {
     /**
      * This method write to content of the file 'Dictionary.txt' to the Dictionary field
      */
-    public void setDictionary(){
+    public boolean setDictionary(){
         dictionary = new HashMap<>();
+        if (!checkValidPath()) return false;
         try{
             File dictionaryFile = new File(pathToSaveIndex + "\\Dictionary.txt");
             BufferedReader bf = new BufferedReader(new FileReader(dictionaryFile));
@@ -85,6 +86,14 @@ public class Engine {
             // load stop word hash map to memory as well
             setStopWords();
         } catch (IOException e) { }
+        return true;
+    }
+
+    public boolean checkValidPath() {
+        File directory = new File(pathToSaveIndex);
+        if (!directory.exists())
+            return false;
+        return true;
     }
 
     public int getNumberOfDocuments(){
@@ -186,7 +195,13 @@ public class Engine {
                 documentDetails.setLength(Integer.valueOf(details[1]));
                 documentDetails.setNumberOfDistinctWords(Integer.valueOf(details[5]));
                 documentDetails.setMaxTermFrequency(Integer.valueOf(details[6]));
-
+                LinkedHashMap<String,Integer> topFiveEntities = new LinkedHashMap<>();
+                for (int i = 7; i < 12 && i < details.length; i++) {
+                    String [] entite = details[i].split(":");
+                    if (entite.length != 2) continue;
+                    topFiveEntities.put(entite[0],Integer.valueOf(entite[1]));
+                }
+                documentDetails.setTopFiveEntities(topFiveEntities);
                 mapOfDocs.put(details[0], documentDetails);
                 line = bf.readLine();
             }

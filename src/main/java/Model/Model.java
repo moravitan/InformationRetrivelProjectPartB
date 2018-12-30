@@ -97,4 +97,8 @@ public class Model extends Observable {
     public TreeSet<String> readDocumentsCities() {
         return engine.readDocumentsCities();
     }
+
+    public boolean checkValidPath(){
+        return engine.checkValidPath();
+    }
 }

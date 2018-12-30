@@ -82,35 +82,71 @@ public class Indexer {
      * @param docId
      * @param termsMapPerDocument
      */
-    public void setDictionaryAndPosting(String docId, HashMap <String, Integer> termsMapPerDocument){
-        for (Map.Entry<String,Integer> entry: termsMapPerDocument.entrySet()){
+    public void setDictionaryAndPosting(String docId, HashMap <String, Integer> termsMapPerDocument) {
+        for (Map.Entry<String, Integer> entry : termsMapPerDocument.entrySet()) {
             // if term doesn't exist in dictionary
-            if (!dictionary.containsKey(entry.getKey())){
+            if (!dictionary.containsKey(entry.getKey())) {
                 // save the term as key and tf and df as value
-                dictionary.put(entry.getKey(), new TermDetails(entry.getValue(),1));
+                dictionary.put(entry.getKey(), new TermDetails(entry.getValue(), 1));
 
             }
             // if the term exist
-            else{
+            else {
                 // add to df
                 dictionary.get(entry.getKey()).addDocumentFrequency();
                 // add total tf
                 dictionary.get(entry.getKey()).setTotalTF(entry.getValue());
             }
             // if the term doesn't exist in posting file
-            PostingDetails postingDetails = new PostingDetails(docId,entry.getValue());
-            if (!posting.containsKey(entry.getKey())){
+            PostingDetails postingDetails = new PostingDetails(docId, entry.getValue());
+            if (!posting.containsKey(entry.getKey())) {
                 // doc_id,TF
                 ArrayList<PostingDetails> list = new ArrayList<>();
                 // save the term as key and doc_id and tf of the term in the document as value
                 list.add(postingDetails);
-                posting.put(entry.getKey(),list);
-            }
-            else{
+                posting.put(entry.getKey(), list);
+            } else {
                 posting.get(entry.getKey()).add(postingDetails);
             }
-
         }
+        setTopFiveEntities(docId,termsMapPerDocument);
+    }
+
+    private void setTopFiveEntities(String docId, HashMap<String, Integer> termsMapPerDocument) {
+        List<Map.Entry<String, Integer>> list = new ArrayList<>(termsMapPerDocument.entrySet());
+        Comparator <Map.Entry<String,Integer>> comparator = new Comparator<Map.Entry<String, Integer>>() {
+            @Override
+            public int compare(Map.Entry<String, Integer> o1, Map.Entry<String, Integer> o2) {
+                return o2.getValue().compareTo(o1.getValue());
+            }
+        };
+        Collections.sort(list,comparator);
+        Map<String, Integer> result = new LinkedHashMap<>();
+        for (Map.Entry<String, Integer> entry : list) {
+            result.put(entry.getKey(), entry.getValue());
+        }
+        //sorted.putAll(termsMapPerDocument);
+        TreeMap<String, Integer> topFiveEntities = new TreeMap<>();
+        for (Map.Entry<String, Integer> entry : result.entrySet()) {
+            if (entry.getKey().length() > 0 && Character.isUpperCase(entry.getKey().charAt(0))) {
+                topFiveEntities.put(entry.getKey().toUpperCase(), entry.getValue());
+                if (topFiveEntities.size() == 5)
+                    break;
+            }
+        }
+        list = new ArrayList<>(topFiveEntities.entrySet());
+        Comparator <Map.Entry<String,Integer>> comparator1 = new Comparator<Map.Entry<String, Integer>>() {
+            @Override
+            public int compare(Map.Entry<String, Integer> o1, Map.Entry<String, Integer> o2) {
+                return o2.getValue().compareTo(o1.getValue());
+            }
+        };
+        Collections.sort(list,comparator1);
+        LinkedHashMap<String, Integer> sortedTopFiveEntites = new LinkedHashMap<>();
+        for (Map.Entry<String, Integer> entry : list) {
+            result.put(entry.getKey(), entry.getValue());
+        }
+        ReadFile.mapOfDocs.get(docId).setTopFiveEntities(sortedTopFiveEntites);
     }
 
     /**
@@ -294,9 +330,9 @@ public class Indexer {
                 writer.write(entry.getKey() + "," + entry.getValue().getLength() + "," + entry.getValue().getFileName() + "," +
                         entry.getValue().getLanguage() + "," + entry.getValue().getDate() + "," +
                         entry.getValue().getNumberOfDistinctWords() + "," + entry.getValue().getMaxTermFrequency() + ",");
-                writer.write("{");
-                for (Map.Entry<Integer,String> entry1:entry.getValue().getTopFiveEntities().entrySet()){
-                    writer.write(entry1.getValue() + ":" + entry1.getKey() + ",");
+                //writer.write("{");
+                for (Map.Entry<String,Integer> entry1:entry.getValue().getTopFiveEntities().entrySet()){
+                    writer.write(entry1.getKey() + ":" + entry1.getValue() + ",");
                 }
                 totalLength+=entry.getValue().getLength();
 //                writer.write("}");

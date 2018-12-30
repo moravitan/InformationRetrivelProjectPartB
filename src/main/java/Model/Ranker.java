@@ -6,7 +6,6 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class Ranker {
 
@@ -37,18 +36,21 @@ public class Ranker {
             bf.close();
             calculateBM25(termsForQueries,numberOfDocuments,averageLength);
             calculateInnerProduct();
-
-            HashMap<String,Double> rankFinal = ranksPerDocument.entrySet()
+            List<Map.Entry<String, Double>> list = new ArrayList<>(ranksPerDocument.entrySet());
+            Comparator <Map.Entry<String,Double>> comparator = new Comparator<Map.Entry<String, Double>>() {
+                @Override
+                public int compare(Map.Entry<String, Double> o1, Map.Entry<String, Double> o2) {
+                    return o2.getValue().compareTo(o1.getValue());
+                }
+            };
+            Collections.sort(list,comparator);
+/*            HashMap<String,Double> rankFinal = ranksPerDocument.entrySet()
                     .stream()
                     .sorted((Map.Entry.<String, Double>comparingByValue().reversed()))
-                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
-
-/*            for(Map.Entry<String,Double> entry: rankFinal.entrySet()){
-                System.out.println("rank for: " + entry.getKey() + " " + entry.getValue());
-            }*/
-
-            for(Map.Entry<String,Double> entry: rankFinal.entrySet()){
-                System.out.println("rank for: " + entry.getKey() + " " + entry.getValue());
+                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));*/
+            Map<String, Double> rankFinal = new LinkedHashMap<>();
+            for (Map.Entry<String, Double> entry : list) {
+                rankFinal.put(entry.getKey(), entry.getValue());
             }
 
             int counter = 0;

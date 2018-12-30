@@ -1,8 +1,12 @@
 package View;
 
 import Controller.Controller;
+import Model.Engine;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.ListView;
 import javafx.stage.Stage;
 
@@ -20,6 +24,8 @@ public class SearchResults  extends View{
     Stage primaryStage;
     TreeMap<Integer, Vector<String>> result;
     public ListView<String> resultList;
+    public ListView<String> entites;
+    public ChoiceBox queryId;
 
 
     public void setController(Controller controller, Stage primaryStage) {
@@ -27,7 +33,34 @@ public class SearchResults  extends View{
         this.primaryStage = primaryStage;
         this.result = View.result;
         setResult();
+        setQueryId();
 
+    }
+
+    private void setQueryId(){
+        for(Map.Entry<Integer,Vector<String>> entry: View.result.entrySet()){
+            queryId.getItems().add(entry.getKey());
+        }
+        queryId.getSelectionModel().selectedIndexProperty().addListener(new ChangeListener<Number>() {
+            @Override
+            public void changed(ObservableValue<? extends Number> observableValue, Number number, Number number2) {
+                Integer key = (Integer) queryId.getItems().get((Integer) number2);
+                Vector <String> result = View.result.get(key);
+                ObservableList<String> dictionaryObservable = FXCollections.observableArrayList(result);
+                for(String str : dictionaryObservable) {
+                    resultList.getItems().add(str);
+                }
+            }
+        });
+        resultList.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
+            if (newSelection != null) {
+                this.entites.getItems().clear();
+                ObservableList<String> entites = FXCollections.observableArrayList(Engine.mapOfDocs.get((String)newSelection).getTopFiveEntities().keySet());
+                for(String str : entites) {
+                    this.entites.getItems().add(str);
+                }
+            }
+        });
     }
 
     private void setResult() {
@@ -43,10 +76,9 @@ public class SearchResults  extends View{
                     line = bf.readLine();
                 }
                 bf.close();
-                resultList.getItems().add("result for: " + entry.getKey());
+                //resultList.getItems().add("result for: " + entry.getKey());
                 ObservableList<String> dictionaryObservable = FXCollections.observableArrayList(entry.getValue());
                 for(String str : dictionaryObservable) {
-                    resultList.getItems().add(str);
                     if (resules.contains(str)) {
                         counter++;
                         totalCounter++;
