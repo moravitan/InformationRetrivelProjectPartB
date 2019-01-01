@@ -212,13 +212,13 @@ public class Parse {
         } else {
             if (wordsInDoc[wordsInDoc.length - 1].length() < 1) {
                 int i = 2;
-                while (true) {
+                while (wordsInDoc.length - i > -1) {
                     int indexOfDot = wordsInDoc[wordsInDoc.length - i].indexOf('.');
                     if (indexOfDot != -1) {
                         wordsInDoc[wordsInDoc.length - i] = wordsInDoc[wordsInDoc.length - i].substring(0, wordsInDoc[wordsInDoc.length - i].length() - 1);
                         break;
                     }
-                    i--;
+                    i++;
                 }
             } else if (wordsInDoc[wordsInDoc.length - 1].endsWith(".")){
                 wordsInDoc[wordsInDoc.length - 1] = wordsInDoc[wordsInDoc.length - 1].substring(0, wordsInDoc[wordsInDoc.length - 1].length() - 1);
