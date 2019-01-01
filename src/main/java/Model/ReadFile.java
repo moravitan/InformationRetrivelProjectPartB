@@ -87,12 +87,16 @@ public class ReadFile{
      */
     private void setStopWords() throws IOException {
         File file = new File(pathToParse + "/stop_words.txt");
+        FileWriter stopWordsFile = new FileWriter(new File(Engine.pathToSaveIndex + "\\stop_words.txt"));
         BufferedReader bf = new BufferedReader(new FileReader(file));
         String line = bf.readLine();
         while (line != null) {
             stopWords.add(line);
+            stopWordsFile.write(line + "\n");
             line = bf.readLine();
         }
+        stopWordsFile.flush();
+        stopWordsFile.close();
     }
     /**
      * This method run recursively over the given folder
