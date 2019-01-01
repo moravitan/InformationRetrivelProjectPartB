@@ -13,6 +13,7 @@ public class Ranker {
     // save for each doc all the common terms with the query
     private HashMap<String, ArrayList<TermRankDetails>> posting; // <docId, term,tf>
     private TreeMap<String,Double> ranksPerDocument; // <docId,rank>
+    private  int i;
 
 
     /**
