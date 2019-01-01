@@ -1,17 +1,17 @@
 package Model;
 
 import java.io.*;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Vector;
 
 public class testMor {
 
     public static void main(String[] args) {
-        //testEngine();
-        String s = "sfsf not relevant dsdsed";
-        int i = s.indexOf("not relevant.");
-        System.out.println(i);
-
-        //System.out.println(s.substring(i + 13).trim());
+        testQueries();
+//        testEngine();
 //        splitQruels();
+
     }
 
     public static void testEngine(){
@@ -47,13 +47,52 @@ public class testMor {
                     writer.close();
                     writer = new FileWriter(new File("C:\\Users\\איתן אביטן\\Downloads\\לימודים\\אחזור מידע\\פרויקט מנוע חיפוש\\" + fileName + ".txt"));
                 }
-
             }
+            writer.flush();
+            writer.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
 
     }
 
+    public static void testQueries(){
+        HashSet<String> cities = new HashSet<>();
+        Engine engine = new Engine();
+        engine.setStemming(false);
+        engine.setPathToSaveIndex("C:\\Users\\איתן אביטן\\Downloads\\לימודים\\אחזור מידע\\פרויקט מנוע חיפוש\\indexer");
+        engine.setDictionary();
+       // engine.readDocumentsCities();
+        engine.searchMultipleQueries(new File("C:\\Users\\איתן אביטן\\Downloads\\לימודים\\אחזור מידע\\פרויקט מנוע חיפוש\\queries.txt"),cities,false);
+        setResult();
+    }
 
+    private static void setResult() {
+        int totalCounter = 0;
+        int counter = 0;
+        for(Map.Entry<Integer, Vector<String>> entry: Searcher.result.entrySet()){
+            HashSet<String> resules = new HashSet<>();
+            try {
+                BufferedReader bf = new BufferedReader(new FileReader("C:\\Users\\איתן אביטן\\Downloads\\לימודים\\אחזור מידע\\פרויקט מנוע חיפוש\\spliter qrels\\" + entry.getKey() + ".txt"));
+                String line = bf.readLine();
+                while (line != null){
+                    resules.add(line);
+                    line = bf.readLine();
+                }
+                bf.close();
+                for(String str : entry.getValue()) {
+                    if (resules.contains(str)) {
+                        counter++;
+                        totalCounter++;
+                    }
+                }
+                System.out.println("Number of matches for query: " + entry.getKey() + " " + counter + " from " + resules.size()) ;
+                counter = 0;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        System.out.println("Number of total matches : " + totalCounter);
+
+    }
 }

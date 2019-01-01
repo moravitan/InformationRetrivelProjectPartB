@@ -95,7 +95,7 @@ public class SearchResults  extends View{
                 e.printStackTrace();
             }
         }
-        System.out.println("Number of total matches : " + totalCounter) ;
+        System.out.println("Number of total matches : " + totalCounter);
 
     }
 
