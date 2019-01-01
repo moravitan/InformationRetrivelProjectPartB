@@ -15,9 +15,7 @@ public class Parse {
     Stemmer stemmer;
     HashMap <String, Integer> termsMapPerDocument; // <Term, TF>
     // CHANGED HERE
-    //TreeMap<String,Integer> topFiveEntities; // <tf, Term>
-    //String minFrequncyTerm = "";
-    //int minFrequency = 1;
+    TreeMap<Integer,String> topFiveEntities; // <tf, Term>
     ///////////////
     HashMap<String, ArrayList<Integer>> citiesMap; // <CityName, listOfPositions>
     HashMap<String,String> monthDictionary;
@@ -43,17 +41,23 @@ public class Parse {
 
 
     /**
-     * Constructor
+     *
      * @param isStemming - boolean indicator to know if need to stem or not
      * @param indexer -
      */
     public Parse(boolean isStemming, Indexer indexer) {
         this.termsMapPerDocument = new HashMap<>();
-        //this.topFiveEntities = new TreeMap<>();
+        this.topFiveEntities = new TreeMap<>(new Comparator<Integer>() {
+            @Override
+            public int compare(Integer o1, Integer o2) {
+                return o2.compareTo(o1);
+            }
+        });
         this.citiesMap = new HashMap<>();
         this.indexer = indexer;
         this.isStemming = isStemming;
-        this.stemmer = new Stemmer();
+        if (isStemming)
+            stemmer = new Stemmer();
         // create and fill dictionaries
         this.monthDictionary = new HashMap<>();
         this.numbersDictionary = new HashMap<>();
@@ -149,44 +153,41 @@ public class Parse {
      */
     public void parsing(String docId, String docText, boolean isCorpus){
         this.docId = docId;
-        if (isCorpus){
-            numberOfDocuments++;
-            // break the text line by line
-            BreakIterator iterator = BreakIterator.getSentenceInstance(Locale.US);
-            // get the text between the tags <TEXT> </TEXT>
-            Document document = Jsoup.parse(docText);
-            String text = document.getElementsByTag("TEXT").text();
-            iterator.setText(text);
-            int start = iterator.first();
-            for (int end = iterator.next();
-                 end != BreakIterator.DONE;
-                 start = end, end = iterator.next()) {
-                try{
-                    parsingLine(text.substring(start,end));
-                }
-                catch (Exception e){ }
-
+        // every 40 files, move all the data in the term map into indexer and reset the map
+        numberOfDocuments++;
+        // break the text line by line
+        BreakIterator iterator = BreakIterator.getSentenceInstance(Locale.US);
+        // get the text between the tags <TEXT> </TEXT>
+        Document document = Jsoup.parse(docText);
+        String text = document.getElementsByTag("TEXT").text();
+        iterator.setText(text);
+        int start = iterator.first();
+        for (int end = iterator.next();
+             end != BreakIterator.DONE;
+             start = end, end = iterator.next()) {
+            try{
+                parsingLine(text.substring(start,end));
             }
+            catch (Exception e){ }
+
+        }
+        if(isCorpus) {
             // update and reset all the parameters of the current document
             ReadFile.mapOfDocs.get(docId).setMaxTermFrequency(maxTermFrequency);
             ReadFile.mapOfDocs.get(docId).setNumberOfDistinctWords(numberOfDistinctWords);
             ReadFile.mapOfDocs.get(docId).setLength(length);
             ////////CHANGED HERE
-            //ReadFile.mapOfDocs.get(docId).setTopFiveEntities(topFiveEntities);
+            ReadFile.mapOfDocs.get(docId).setTopFiveEntities(topFiveEntities);
             /////////////
             indexer.setAll(docId, termsMapPerDocument, citiesMap);
-            maxTermFrequency = 0;
-            numberOfDistinctWords = 0;
-            position = -1;
-            length = 0;
-            termsMapPerDocument = new HashMap<>();
-            citiesMap = new HashMap<>();
-            //topFiveEntities = new TreeMap<>();
         }
-        else{
-            termsMapPerDocument = new HashMap<>();
-            parsingLine(docText);
-        }
+        maxTermFrequency = 0;
+        numberOfDistinctWords = 0;
+        position = -1;
+        length = 0;
+        termsMapPerDocument = new HashMap<>();
+        citiesMap = new HashMap<>();
+        topFiveEntities = new TreeMap<>();
     }
 
 
@@ -211,16 +212,8 @@ public class Parse {
                 wordsInDoc[0] = wordsInDoc[0].substring(0, indexOfDot);
         } else {
             if (wordsInDoc[wordsInDoc.length - 1].length() < 1) {
-                int i = 2;
-                while (true) {
-                    int indexOfDot = wordsInDoc[wordsInDoc.length - i].indexOf('.');
-                    if (indexOfDot != -1) {
-                        wordsInDoc[wordsInDoc.length - i] = wordsInDoc[wordsInDoc.length - i].substring(0, wordsInDoc[wordsInDoc.length - i].length() - 1);
-                        break;
-                    }
-                    i--;
-                }
-            } else if (wordsInDoc[wordsInDoc.length - 1].endsWith(".")){
+                wordsInDoc[wordsInDoc.length - 2] = wordsInDoc[wordsInDoc.length - 2].substring(0, wordsInDoc[wordsInDoc.length - 2].length() - 1);
+            } else {
                 wordsInDoc[wordsInDoc.length - 1] = wordsInDoc[wordsInDoc.length - 1].substring(0, wordsInDoc[wordsInDoc.length - 1].length() - 1);
             }
         }
@@ -256,15 +249,16 @@ public class Parse {
             // like (WORD)
             if (wordsInDoc[i].startsWith("(") || wordsInDoc[i].startsWith("["))
                 wordsInDoc[i] = wordsInDoc[i].substring(1);
-            if (wordsInDoc[i].endsWith(")") || wordsInDoc[i].endsWith("]") || wordsInDoc[i].endsWith(":") || wordsInDoc[i].endsWith("'"))
+            if (wordsInDoc[i].endsWith(")") || wordsInDoc[i].endsWith("]") || wordsInDoc[i].endsWith(":"))
                 wordsInDoc[i] = wordsInDoc[i].substring(0,wordsInDoc[i].length() - 1);
 
-            if (wordsInDoc[i].length() == 0)
-                continue;
             if (ReadFile.stopWords.contains(wordsInDoc[i].toLowerCase()) && !wordsInDoc[i].equalsIgnoreCase("between") && !wordsInDoc[i].equals("may"))
                 continue;
 
 
+
+            if (wordsInDoc[i].equalsIgnoreCase("moscow"))
+                numCounter++;
 
             // check if the string in wordInDoc[i] contains only letters
             if (!monthDictionary.containsKey(wordsInDoc[i]) && !wordsInDoc[i].equals("between") && isWord(wordsInDoc[i])){
@@ -347,9 +341,6 @@ public class Parse {
                     //Between 1 1/2 and number || Between 1 Million and number
                     if (i + 4 < wordsInDoc.length && (isInteger(wordsInDoc[i + 2],false) || numbersDictionary.containsKey(wordsInDoc[i + 2])) && wordsInDoc[i + 3].equalsIgnoreCase("and") && isInteger(wordsInDoc[i + 4],false)) {
                         numberTerm.add(new StringBuilder(wordsInDoc[i + 1]));
-                        // add million to the dictionary ADD HERE!!!!
-                        if (numbersDictionary.containsKey(wordsInDoc[i + 2]))
-                            updateTerm(wordsInDoc[i+2]);
                         numberTerm.add(new StringBuilder(wordsInDoc[i + 2]));
                         StringBuilder term1 = parseNumbers(false, numberTerm, isInteger(wordsInDoc[i + 2],false));
                         numberTerm.clear();
@@ -419,9 +410,6 @@ public class Parse {
                             if (numbersDictionary.containsKey(beforeMakaf) || beforeMakaf.matches(numberMakaf)) {
                                 numberTerm.add(new StringBuilder(wordsInDoc[i]));
                                 numberTerm.add(new StringBuilder(beforeMakaf));
-                                if (numbersDictionary.containsKey(beforeMakaf))
-                                    // add million to dictionary ADD HERE!!!!!!
-                                    updateTerm(beforeMakaf);
                                 StringBuilder term1 = parseNumbers(false, numberTerm, beforeMakaf.contains("/"));
                                 numberTerm.clear();
                                 if (isInteger(afterMakaf,false)) {
@@ -473,8 +461,6 @@ public class Parse {
                         StringBuilder finalTerm = parseNumbers(true, numberTerm, twoNumsCells);
                         numberTerm.clear();
                         updateTerm(finalTerm.toString());
-                        // add million/billion/trillion to the dictionary ADD HERE!!!
-                        updateTerm(wordsInDoc[i+1]);
                         i = i + 1;
                         continue;
                     }
@@ -510,8 +496,6 @@ public class Parse {
                         StringBuilder finalTerm = parseNumbers(false, numberTerm, twoNumsCells);
                         numberTerm.clear();
                         updateTerm(finalTerm.toString());
-                        // add grams/kilograms/tons to dictionary ADD HERE!!!!!
-                        updateTerm(wordsInDoc[i+1]);
                         i = i + 1;
                         continue;
                     }
@@ -534,9 +518,6 @@ public class Parse {
                     // number million/billion/trillion/fraction grams/kilograms/tons
                     if (i + 2 < wordsInDoc.length && !isDollar && weightDictionary.containsKey(wordsInDoc[i + 2])) {
                         String currWord = Character.toUpperCase(wordsInDoc[i+1].charAt(0)) + wordsInDoc[i+1].substring(1);
-                        if (numbersDictionary.containsKey(currWord))
-                            // add million/billion/trillion to dictionary ADD HERE!!!
-                            updateTerm(currWord);
                         if (numbersDictionary.containsKey(currWord) || twoNumsCells) {
                             numberTerm.add(numTerm);
                             numberTerm.add(new StringBuilder(currWord));
@@ -555,8 +536,6 @@ public class Parse {
                         numberTerm.add(numTerm);
                         numberTerm.add(new StringBuilder(wordsInDoc[i + 1]));
                         //update dic with Dollars/Dollar/dollar/dollars
-                        updateTerm(wordsInDoc[i + 3]);
-                        // add million/billion/trillion
                         updateTerm(wordsInDoc[i + 1]);
                         //call to func which deal with prices
                         StringBuilder finalTerm = parseNumbers(true, numberTerm, twoNumsCells);
@@ -595,41 +574,6 @@ public class Parse {
                         i = i + 1;
                         continue;
                     }
-                    //handle number-number like 2,200-2,400 || 120-120.5 or number-word like: 2-kids, 2.5-people
-                    int makafIndex = wordsInDoc[i].indexOf('-');
-                    if (makafIndex != -1) {
-                        String beforeMakaf = wordsInDoc[i].substring(0, makafIndex);
-                        String afterMakaf = wordsInDoc[i].substring(makafIndex + 1);
-                        //handle number-number like: 1/2-3/4 || 2-2.5
-                        if (isInteger(beforeMakaf,false)) {
-                            numberTerm.add(new StringBuilder(beforeMakaf));
-                            StringBuilder term1 = parseNumbers(false, numberTerm, false);
-                            numberTerm.clear();
-                            if (isInteger(afterMakaf,false)) {
-                                numberTerm.add(new StringBuilder(afterMakaf));
-                                //1-1 1/2 || 1-2 Million
-                                if (i + 1 < wordsInDoc.length && (isInteger(wordsInDoc[i + 1],false) || numbersDictionary.containsKey(wordsInDoc[i + 1]))) {
-                                    if (numbersDictionary.containsKey(wordsInDoc[i + 1]))
-                                        // add million to dictionary ADD HERE
-                                        updateTerm(wordsInDoc[i+1]);
-                                    numberTerm.add(new StringBuilder(wordsInDoc[i + 1]));
-                                    twoNumsCells = true;
-                                    i = i + 1;
-                                }
-                                StringBuilder term2 = parseNumbers(false, numberTerm, twoNumsCells);
-                                term1.append("-" + term2);
-                                numberTerm.clear();
-                                updateTerm(term1.toString());
-                                continue;
-                            }
-                            //number-word like 2-girls
-                            else {
-                                term1.append("-" + afterMakaf);
-                                updateTerm(term1.toString());
-                                continue;
-                            }
-                        }
-                    }
 
                     numberTerm.add(new StringBuilder(wordsInDoc[i]));
                     if (twoNumsCells || (i + 1 < wordsInDoc.length && numbersDictionary.containsKey(wordsInDoc[i + 1]))) {
@@ -650,6 +594,41 @@ public class Parse {
                         updateTerm(wordsInDoc[i]);
                         continue;
                     }
+                }
+
+                //handle number-number like 2,200-2,400 || 120-120.5 or number-word like: 2-kids, 2.5-people
+                int makafIndex = wordsInDoc[i].indexOf('-');
+                if (makafIndex != -1) {
+                    String beforeMakaf = wordsInDoc[i].substring(0, makafIndex);
+                    String afterMakaf = wordsInDoc[i].substring(makafIndex + 1);
+                    //handle number-number like: 1/2-3/4 || 2-2.5
+                    if (isInteger(beforeMakaf,false)) {
+                        numberTerm.add(new StringBuilder(beforeMakaf));
+                        StringBuilder term1 = parseNumbers(false, numberTerm, false);
+                        numberTerm.clear();
+                        if (isInteger(afterMakaf,false)) {
+                            numberTerm.add(new StringBuilder(afterMakaf));
+                            //1-1 1/2 || 1-2 Million
+                            if (i + 1 < wordsInDoc.length && (isInteger(wordsInDoc[i + 1],false) || numbersDictionary.containsKey(wordsInDoc[i + 1]))) {
+                                numberTerm.add(new StringBuilder(wordsInDoc[i + 1]));
+                                twoNumsCells = true;
+                                i = i + 1;
+                            }
+                            StringBuilder term2 = parseNumbers(false, numberTerm, twoNumsCells);
+                            term1.append("-" + term2);
+                            numberTerm.clear();
+                            updateTerm(term1.toString());
+                            continue;
+                        }
+                        //number-word like 2-girls
+                        else {
+                            term1.append("-" + afterMakaf);
+                            updateTerm(term1.toString());
+                            continue;
+                        }
+                    }
+
+
                 }
 
 /*                wordsInDoc[i] = wordsInDoc[i].replaceAll("[^a-zA-Z]", "");
@@ -769,25 +748,22 @@ public class Parse {
                         finalTerm.append("K");
                         break;
                     }
-                    if ((tmpNum.contains(".") && dotIndex < 5) || (tmpNum.length() < 4 && StringUtils.isNumeric(tmpNum))){
+                    if (tmpNum.contains(".") && dotIndex < 5){
                         finalTerm.append(tmpNum);
                     }
-                    else {
-                        tmpNum = tmpNum.replaceAll("\\.", "");
-                        if (tmpNum.length() > 3) {
-                            finalTerm.append(tmpNum);
-                            if (dotIndex == -1)
-                                finalTerm.insert(finalTerm.length() - 3, ".");
-                            else
-                                finalTerm.insert(dotIndex - 3, ".");
-                            finalTerm = allCharactersZero(finalTerm);
-                            finalTerm.append("K");
-                        }
+                    else{
+                        tmpNum = tmpNum.replaceAll("\\." , "");
+                        finalTerm.append(tmpNum);
+                        if (dotIndex == -1)
+                            finalTerm.insert(finalTerm.length()-3,".");
+                        else
+                            finalTerm.insert(dotIndex-3,".");
+                        finalTerm = allCharactersZero(finalTerm);
+                        finalTerm.append("K");
                     }
                     if (priceTermSize == 2) {
                         finalTerm.append(weightDictionary.get(numberTerm.elementAt(1).toString()));
                     }
-
                 }
                 break;
             }
@@ -837,10 +813,7 @@ public class Parse {
             else
                 str = str.delete(i,str.length());
         }
-        if (str.toString().endsWith("."))
-            return str.delete(str.indexOf("."),str.length());
-        if (str.indexOf(".") + 3 < str.length())
-            str.delete(str.indexOf(".") + 3,str.length());
+        str.delete(str.indexOf(".") + 3,str.length());
         return str;
     }
 
@@ -1003,49 +976,45 @@ public class Parse {
                 citiesMap.get(key.toUpperCase()).add(position);
             }
         }
-/*        if (Character.isUpperCase(key.charAt(0)))
-            setTopFiveEntities(key.toUpperCase(),termsMapPerDocument.get(key));*/
+        if (Character.isUpperCase(key.charAt(0)))
+            setTopFiveEntities(key,termsMapPerDocument.get(key));
     }
 
     /**
      * This method save the top five terms which appear in upper case and their tf
-     * @param
-     * @param
+     * @param term
+     * @param tf
      */
- /*   private void setTopFiveEntities(String term,int tf) {
-        if (topFiveEntities.size() < 5) {
-            topFiveEntities.put(term, tf);
-            if (tf <= minFrequency) {
-                minFrequncyTerm = term;
-                minFrequency = tf;
+    private void setTopFiveEntities(String term,int tf) {
+        if (topFiveEntities.size() <= 5)
+            topFiveEntities.put(tf,term);
+        if (tf < topFiveEntities.lastKey())
+            return;
+        else{
+            int needToDelete = 0;
+            for(Map.Entry<Integer,String> entry : topFiveEntities.entrySet()){
+                // if the new tf is bigger from one of the keys in the topFiveEntities dictionary
+                // save the key in a temporary parameter
+                if (entry.getKey() < tf){
+                    needToDelete = entry.getKey();
+                }
             }
-            return;
+            topFiveEntities.remove(needToDelete);
+            topFiveEntities.put(tf,term);
         }
-        if (tf <= minFrequency)
-            return;
-        if (topFiveEntities.containsKey(term)){
-            topFiveEntities.put(term,tf);
-            return;
-        }
-        TreeMap<String,Integer> sorted = new TreeMap<>(new Comparator<String>() {
-            @Override
-            public int compare(String o1, String o2) {
-                return topFiveEntities.get(o1).compareTo(topFiveEntities.get(o2));
-            }
-        });
-        sorted.putAll(topFiveEntities);
-        minFrequency = sorted.get(sorted.firstKey());
-        topFiveEntities.remove(sorted.firstKey());
-        topFiveEntities.put(term, tf);
-    }*/
-
-    public void setStemming(boolean stemming) {
-        isStemming = stemming;
     }
 
-    public void setIndexer(Indexer indexer) {
-        this.indexer = indexer;
+
+    /**
+     * This function sends  the remaining dictionary to indexer and than call the create inverted file in indexer object
+     */
+    public void notifyDone() throws InterruptedException {
+        //createCityIndex();
+        //indexer.buildIndex(termsMapPerDocument);
+        indexer.writeDataToDisk();
+        indexer.createInvertedIndex();
     }
+
 
     //<editor-fold desc="Getters">
     /**

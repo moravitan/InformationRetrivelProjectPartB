@@ -6,11 +6,11 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Ranker {
 
     private HashSet<String> cityDocuments;
-    // save for each doc all the common terms with the query
     private HashMap<String, ArrayList<TermRankDetails>> posting; // <docId, term,tf>
     private TreeMap<String,Double> ranksPerDocument; // <docId,rank>
 
@@ -36,20 +36,13 @@ public class Ranker {
             int averageLength = Integer.valueOf(lineDetails[1]);
             bf.close();
             calculateBM25(termsForQueries,numberOfDocuments,averageLength);
-            //calculateInnerProduct();
-            List<Map.Entry<String, Double>> list = new ArrayList<>(ranksPerDocument.entrySet());
-            Comparator <Map.Entry<String,Double>> comparator = new Comparator<Map.Entry<String, Double>>() {
-                @Override
-                public int compare(Map.Entry<String, Double> o1, Map.Entry<String, Double> o2) {
-                    return o2.getValue().compareTo(o1.getValue());
-                }
-            };
-            Collections.sort(list,comparator);
-            Map<String, Double> rankFinal = new LinkedHashMap<>();
-            for (Map.Entry<String, Double> entry : list) {
-                rankFinal.put(entry.getKey(), entry.getValue());
-            }
-
+            HashMap<String,Double> rankFinal = ranksPerDocument.entrySet()
+                    .stream()
+                    .sorted((Map.Entry.<String, Double>comparingByValue().reversed()))
+                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
+/*            for(Map.Entry<String,Double> entry: rankFinal.entrySet()){
+                System.out.println("rank for: " + entry.getKey() + " " + entry.getValue());
+            }*/
             int counter = 0;
             Vector<String> result = new Vector<>();
             // get the 50 documents with the highest rank
@@ -180,44 +173,42 @@ public class Ranker {
         double b = 0.75;
         // for each document in posting
         for (Map.Entry<String,ArrayList<TermRankDetails>> entry:posting.entrySet()){
-            double docLength = Engine.mapOfDocs.get(entry.getKey()).getLength();
-            // for each term in the document
-            for (TermRankDetails termRankDetails:entry.getValue()) {
-                double partA = 0.0;
-                // get the number of appearance of the term in the query
-                if (termsForQueries.containsKey(termRankDetails.getTerm().toLowerCase()))
-                    partA = termsForQueries.get(termRankDetails.getTerm().toLowerCase());
-                else
-                    partA = termsForQueries.get(termRankDetails.getTerm().toUpperCase());
-                // get the number of appearance the term has in the document
-                double partB = ((k+1) * termRankDetails.getTF());
-                double partC = termRankDetails.getTF()+ k * (1-b + b *(docLength/averageLength));
-                double partD = Math.log((numberOfDocuments + 1)/ (double) Engine.dictionary.get(termRankDetails.getTerm()).getDocumentFrequency());
-                // calculate the bm25 formula
-                rank = rank + (partA * (partB/partC) * partD);
-            }
-            ranksPerDocument.put(entry.getKey(),rank);
-            rank = 0.0;
+//            try {
+/*                BufferedReader bf = new BufferedReader(new FileReader(Engine.pathToSaveIndex + "\\documentsDetails.txt"));
+                double docLength = 0;
+                String line = bf.readLine();
+                while (line != null){
+                    String docId = line.substring(0,line.indexOf(","));
+                    line = line.substring(line.indexOf(","));
+                    if (docId.equals(entry.getKey())){
+                        docLength = Integer.valueOf(StringUtils.substringBetween(line,",",","));
+                        break;
+                    }
+                    line = bf.readLine();
+                }*/
+                double docLength = Engine.mapOfDocs.get(entry.getKey()).getLength();
+                // for each term in the document
+                for (TermRankDetails termRankDetails:entry.getValue()) {
+                    double partA = 0.0;
+                    // get the number of appearance of the term in the query
+                    if (termsForQueries.containsKey(termRankDetails.getTerm().toLowerCase()))
+                        partA = termsForQueries.get(termRankDetails.getTerm().toLowerCase());
+                    else
+                        partA = termsForQueries.get(termRankDetails.getTerm().toUpperCase());
+                    // get the number of appearance the term has in the document
+                    double partB = ((k+1) * termRankDetails.getTF());
+                    double partC = termRankDetails.getTF()+ k * (1-b + b *(docLength/averageLength));
+                    double partD = Math.log((numberOfDocuments + 1)/ (double) Engine.dictionary.get(termRankDetails.getTerm()).getDocumentFrequency());
+                    // calculate the bm25 formula
+                    rank = rank + (partA * (partB/partC) * partD);
+                }
+                ranksPerDocument.put(entry.getKey(),rank);
+/*            } catch (IOException e) {
+                e.printStackTrace();
+            }*/
+
+
         }
     }
 
-    /**
-     * This method calculate for each document in @posting the inner product rank for the query
-     * and adding it to the bm25 rank calculated before
-     */
-    private void calculateInnerProduct() {
-        double rank = 0.0;
-        for (Map.Entry<String, ArrayList<TermRankDetails>> entry : posting.entrySet()) {
-            double docLength = Engine.mapOfDocs.get(entry.getKey()).getLength();
-            // for each term in the document
-            for (TermRankDetails termRankDetails : entry.getValue()) {
-                double termWeight = termRankDetails.getTF()/docLength;
-                rank = rank + termWeight;
-            }
-            // get the previous rank in the ranksPerDocument hash map
-            double previousRank = ranksPerDocument.get(entry.getKey());
-            ranksPerDocument.put(entry.getKey(),rank + previousRank);
-            rank = 0.0;
-        }
-    }
 }
