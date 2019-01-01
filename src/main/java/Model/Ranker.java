@@ -24,12 +24,13 @@ public class Ranker {
      * @param cities
      * @param queryId
      */
-    public void rank(HashMap<String,Integer> termsForQueries, HashMap<String,Integer> termsNotRelevant, HashSet<String> cities, String queryId){
+    public void rank(HashMap<String,Integer> termsForQueries ,HashMap<String,Integer> termsNotRelevant, HashSet<String> cities, String queryId){
         this.posting = new HashMap<>();
         this.ranksPerDocument = new TreeMap<>();
         if(cities.size() > 0)
             getCitiesDocuments(cities);
-        getNotRelevantDocument(termsNotRelevant);
+        if (termsNotRelevant != null)
+            getNotRelevantDocument(termsNotRelevant);
         getTermsPosting(termsForQueries);
         try {
             BufferedReader bf = new BufferedReader(new FileReader(Engine.pathToSaveIndex + "\\DetailsForRank.txt"));

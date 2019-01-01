@@ -5,7 +5,12 @@ import java.io.*;
 public class testMor {
 
     public static void main(String[] args) {
-        testEngine();
+        //testEngine();
+        String s = "sfsf not relevant dsdsed";
+        int i = s.indexOf("not relevant.");
+        System.out.println(i);
+
+        //System.out.println(s.substring(i + 13).trim());
 //        splitQruels();
     }
 
