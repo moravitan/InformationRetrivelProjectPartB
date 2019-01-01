@@ -99,7 +99,7 @@ public class Searcher {
                     String parsedNarr = parseNarr(narrContent);
                     parse.parsing(id, parsedNarr, false);
                     notRelevant= parse.getTermsMapPerDocument();
-                   // ranker.rank(query,notRelevant,cities, id);
+                    ranker.rank(query,notRelevant,cities, id);
                     id = "";
                     queryContent = "";
                     descContent = "";
