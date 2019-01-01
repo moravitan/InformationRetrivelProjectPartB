@@ -10,6 +10,7 @@ import java.util.*;
 public class Ranker {
 
     private HashSet<String> cityDocuments;
+    // save for each doc all the common terms with the query
     private HashMap<String, ArrayList<TermRankDetails>> posting; // <docId, term,tf>
     private TreeMap<String,Double> ranksPerDocument; // <docId,rank>
 
@@ -35,7 +36,7 @@ public class Ranker {
             int averageLength = Integer.valueOf(lineDetails[1]);
             bf.close();
             calculateBM25(termsForQueries,numberOfDocuments,averageLength);
-            calculateInnerProduct();
+            //calculateInnerProduct();
             List<Map.Entry<String, Double>> list = new ArrayList<>(ranksPerDocument.entrySet());
             Comparator <Map.Entry<String,Double>> comparator = new Comparator<Map.Entry<String, Double>>() {
                 @Override
@@ -44,10 +45,6 @@ public class Ranker {
                 }
             };
             Collections.sort(list,comparator);
-/*            HashMap<String,Double> rankFinal = ranksPerDocument.entrySet()
-                    .stream()
-                    .sorted((Map.Entry.<String, Double>comparingByValue().reversed()))
-                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));*/
             Map<String, Double> rankFinal = new LinkedHashMap<>();
             for (Map.Entry<String, Double> entry : list) {
                 rankFinal.put(entry.getKey(), entry.getValue());

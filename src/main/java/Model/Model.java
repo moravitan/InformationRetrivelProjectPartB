@@ -2,6 +2,8 @@ package Model;
 
 
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.*;
 
 public class Model extends Observable {
@@ -100,5 +102,23 @@ public class Model extends Observable {
 
     public boolean checkValidPath(){
         return engine.checkValidPath();
+    }
+
+    public void saveQueryResultToFile(String path){
+        try {
+            FileWriter fileForTrecEval = new FileWriter (new File(path + "\\fileForTrecEval.txt"));
+            for(Map.Entry<Integer,Vector<String>> entry: Searcher.result.entrySet()){
+                String queryId = String.valueOf(entry.getKey());
+                Vector<String> resultsForQuery = entry.getValue();
+                for (String docId: resultsForQuery){
+                    fileForTrecEval.write(queryId + " 0 " + docId + " 0 0.0 mt" + "\n");
+                }
+            }
+            fileForTrecEval.flush();
+            fileForTrecEval.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 }

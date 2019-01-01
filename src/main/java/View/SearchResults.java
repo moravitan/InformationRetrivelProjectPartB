@@ -6,11 +6,15 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.control.Alert;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.ListView;
+import javafx.scene.control.TextField;
+import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashSet;
@@ -26,6 +30,7 @@ public class SearchResults  extends View{
     public ListView<String> resultList;
     public ListView<String> entites;
     public ChoiceBox queryId;
+    public TextField pathToSaveQueryResults;
 
 
     public void setController(Controller controller, Stage primaryStage) {
@@ -92,6 +97,29 @@ public class SearchResults  extends View{
         }
         System.out.println("Number of total matches : " + totalCounter) ;
 
+    }
+
+    public void loadPath(){
+        try {
+            DirectoryChooser fileChooser = new DirectoryChooser();
+            fileChooser.setTitle("Open Resource File");
+            File selectedFile = fileChooser.showDialog(new Stage());
+            if (selectedFile != null) {
+                pathToSaveQueryResults.setText(selectedFile.getAbsolutePath());
+            }
+        }catch (Exception e){
+            e.getStackTrace();
+        }
+
+    }
+
+    public void saveQueryResultToFile(){
+        if (pathToSaveQueryResults.getText() == null || pathToSaveQueryResults.getText().trim().isEmpty())
+            alert("You did not enter any path", Alert.AlertType.ERROR);
+        else {
+            controller.saveQueryResultToFile(pathToSaveQueryResults.getText());
+            alert("Result saved to file", Alert.AlertType.INFORMATION);
+        }
     }
 
 }

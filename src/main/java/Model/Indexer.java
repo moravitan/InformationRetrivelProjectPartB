@@ -144,7 +144,7 @@ public class Indexer {
         Collections.sort(list,comparator1);
         LinkedHashMap<String, Integer> sortedTopFiveEntites = new LinkedHashMap<>();
         for (Map.Entry<String, Integer> entry : list) {
-            result.put(entry.getKey(), entry.getValue());
+            sortedTopFiveEntites.put(entry.getKey(), entry.getValue());
         }
         ReadFile.mapOfDocs.get(docId).setTopFiveEntities(sortedTopFiveEntites);
     }

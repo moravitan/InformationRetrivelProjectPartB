@@ -151,7 +151,7 @@ public class Engine {
         if (!isStemming)
             Engine.pathToSaveIndex = absolutePath + "\\posting";
         else
-            Engine.pathToSaveIndex = absolutePath + "\\postingStemming";
+            Engine.pathToSaveIndex = absolutePath + "\\stemmingPosting";
     }
 
 

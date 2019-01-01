@@ -131,4 +131,8 @@ public class Controller extends Observable implements Observer {
     public boolean checkValidPath(){
         return model.checkValidPath();
     }
+
+    public void saveQueryResultToFile(String path){
+        model.saveQueryResultToFile(path);
+    }
 }
