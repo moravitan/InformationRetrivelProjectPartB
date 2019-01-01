@@ -15,6 +15,7 @@ public class Searcher {
     Ranker ranker;
     Parse parse;
     HashMap<String,Integer> query;
+    HashMap<String,Integer> notRelevant;
     HashSet<String> cities;
     static TreeMap<Integer, Vector<String>> result;
     boolean isSemantic;
@@ -60,6 +61,7 @@ public class Searcher {
             String id="";
             String queryContent="";
             String descContent = "";
+            String narrContent = "";
             while ((st = br.readLine()) != null ){
                 if (st.contains("<num> Number:")) {
                     id = st.substring(14, 17);
@@ -77,6 +79,16 @@ public class Searcher {
                     }
                     descContent = descContent.replaceAll("\\s+$","");
                 }
+                if (st.contains("<narr>")){
+                    st= br.readLine();
+                    narrContent = st;
+                    st = br.readLine();
+                    while(!st.contains("</top>")){
+                        narrContent =  narrContent +" "+ st;
+                        st = br.readLine();
+                    }
+
+                }
 
                 if (!id.equals("") && !descContent.equals("")) {
                     if(isSemantic)
@@ -84,10 +96,14 @@ public class Searcher {
                     queryContent = queryContent + " " + descContent;
                     parse.parsing(id, queryContent, false);
                     query = parse.getTermsMapPerDocument();
-                    ranker.rank(query, cities, id);
+                    String parsedNarr = parseNarr(narrContent);
+                    parse.parsing(id, parsedNarr, false);
+                    notRelevant= parse.getTermsMapPerDocument();
+                   // ranker.rank(query,notRelevant,cities, id);
                     id = "";
                     queryContent = "";
                     descContent = "";
+                    narrContent = "";
                 }
 
             }
@@ -151,6 +167,115 @@ public class Searcher {
         if (querySB.charAt(querySB.length()-1)== ' ')
             querySB.deleteCharAt(querySB.length()-1);
         return querySB.toString();
+    }
+
+
+    private static String parseNarr(String narr){
+        String ans = "";
+        //if ________ not relevant.
+        if(narr.contains("not relevant.") ){
+            int notRelIndex = narr.indexOf("not relevant.");
+            if(notRelIndex!=-1){
+                narr= narr.substring(0,notRelIndex+12);
+                int dotIndex = narr.lastIndexOf(".");
+                if(dotIndex!=-1)
+                    return(narr.substring(dotIndex+1, notRelIndex-1).trim());
+                else{
+                    return(narr.substring(0, notRelIndex-1).trim());
+                }
+            }
+        }
+        //if not relevant: _______
+        if(narr.contains("not relevant:")){
+            int notRelIndex = narr.indexOf("not relevant:");
+            narr= narr.substring(notRelIndex+13).trim();
+            //index of '('
+            int openIndex = narr.indexOf('(');
+            if(openIndex!=-1){
+                /// index of ')'
+                int closeIndex= narr.indexOf(')');
+                if(closeIndex!=-1){
+                    String before = narr.substring(0,openIndex-1);
+                    String after = narr.substring(closeIndex+1);
+                    return before+ " " + after;
+                }
+            }
+
+            int dotaimIndex = narr.lastIndexOf(":");
+            return(narr.substring(dotaimIndex+1));
+        }
+
+        //if ________ not relevant.
+        if(narr.contains("non-relevant.") ){
+            int nonRelIndex = narr.indexOf("non-relevant.");
+            if(nonRelIndex!=-1){
+                narr= narr.substring(0,nonRelIndex+12);
+                int dotIndex = narr.lastIndexOf(".");
+                if(dotIndex!=-1)
+                    return(narr.substring(dotIndex+1, nonRelIndex-1).trim());
+                else{
+                    return(narr.substring(0, nonRelIndex-1).trim());
+                }
+            }
+        }
+        //if not relevant: _______
+        if(narr.contains("non-relevant:")){
+            int nonRelIndex = narr.indexOf("non-relevant:");
+            narr= narr.substring(nonRelIndex+13).trim();
+            //index of '('
+            int openIndex = narr.indexOf('(');
+            if(openIndex!=-1){
+                /// index of ')'
+                int closeIndex= narr.indexOf(')');
+                if(closeIndex!=-1){
+                    String before = narr.substring(0,openIndex-1);
+                    String after = narr.substring(closeIndex+1);
+                    return before+ " " + after;
+                }
+            }
+
+            int dotaimIndex = narr.lastIndexOf(":");
+            return(narr.substring(dotaimIndex+1));
+        }
+
+        //if ________ not relevant.
+        if(narr.contains("not relevant,") ){
+            int notRelIndex = narr.indexOf("not relevant,");
+            if(notRelIndex!=-1){
+                narr= narr.substring(0,notRelIndex+12);
+                int dotIndex = narr.lastIndexOf(".");
+                if(dotIndex!=-1)
+                    return(narr.substring(dotIndex+1, notRelIndex-1).trim());
+                else{
+                    return(narr.substring(0, notRelIndex-1).trim());
+                }
+            }
+        }
+        //if not relevant ___________.
+        if(narr.contains("non-relevant")){
+            int nonRelIndex = narr.indexOf("non-relevant");
+            if((narr.charAt(nonRelIndex+12)==',' || narr.charAt(nonRelIndex+12)=='.')){
+                return "";
+            }
+            else{
+                narr = narr.substring(nonRelIndex);
+                int dotIndex = narr.indexOf('.');
+                return narr.substring(nonRelIndex+12 , dotIndex);
+            }
+        }
+        //if not relevant ___________.
+        if(narr.contains("not relevant")){
+            int notRelIndex = narr.indexOf("not relevant");
+            if((narr.charAt(notRelIndex+12)==',' || narr.charAt(notRelIndex+12)=='.')){
+                return "";
+            }
+            else{
+                narr = narr.substring(notRelIndex);
+                int dotIndex = narr.indexOf('.');
+                return narr.substring(notRelIndex+12 , dotIndex);
+            }
+        }
+        return ans;
     }
 
 }
