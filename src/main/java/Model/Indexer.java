@@ -30,6 +30,8 @@ public class Indexer {
     // path to save all the files created in this class
     int numberOfTerms;
     String pathToSaveIndex;
+    // total length of all files
+    long totalLength;
 
     /**
      *
@@ -49,6 +51,7 @@ public class Indexer {
         this.upperPosting = new Vector<>();
         this.lowerPosting = new Vector<>();
         this.cityPosting = new Vector<>();
+        this.numOfPosting = 0;
         int threadPoolSize = Runtime.getRuntime().availableProcessors() * 2;
         this.threadPoolExecutor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
         threadPoolExecutor.setCorePoolSize(threadPoolSize);
@@ -79,35 +82,71 @@ public class Indexer {
      * @param docId
      * @param termsMapPerDocument
      */
-    public void setDictionaryAndPosting(String docId, HashMap <String, Integer> termsMapPerDocument){
-        for (Map.Entry<String,Integer> entry: termsMapPerDocument.entrySet()){
+    public void setDictionaryAndPosting(String docId, HashMap <String, Integer> termsMapPerDocument) {
+        for (Map.Entry<String, Integer> entry : termsMapPerDocument.entrySet()) {
             // if term doesn't exist in dictionary
-            if (!dictionary.containsKey(entry.getKey())){
+            if (!dictionary.containsKey(entry.getKey())) {
                 // save the term as key and tf and df as value
-                dictionary.put(entry.getKey(), new TermDetails(entry.getValue(),1));
+                dictionary.put(entry.getKey(), new TermDetails(entry.getValue(), 1));
 
             }
             // if the term exist
-            else{
+            else {
                 // add to df
                 dictionary.get(entry.getKey()).addDocumentFrequency();
                 // add total tf
                 dictionary.get(entry.getKey()).setTotalTF(entry.getValue());
             }
             // if the term doesn't exist in posting file
-            PostingDetails postingDetails = new PostingDetails(docId,entry.getValue());
-            if (!posting.containsKey(entry.getKey())){
+            PostingDetails postingDetails = new PostingDetails(docId, entry.getValue());
+            if (!posting.containsKey(entry.getKey())) {
                 // doc_id,TF
                 ArrayList<PostingDetails> list = new ArrayList<>();
                 // save the term as key and doc_id and tf of the term in the document as value
                 list.add(postingDetails);
-                posting.put(entry.getKey(),list);
-            }
-            else{
+                posting.put(entry.getKey(), list);
+            } else {
                 posting.get(entry.getKey()).add(postingDetails);
             }
-
         }
+        setTopFiveEntities(docId,termsMapPerDocument);
+    }
+
+    private void setTopFiveEntities(String docId, HashMap<String, Integer> termsMapPerDocument) {
+        List<Map.Entry<String, Integer>> list = new ArrayList<>(termsMapPerDocument.entrySet());
+        Comparator <Map.Entry<String,Integer>> comparator = new Comparator<Map.Entry<String, Integer>>() {
+            @Override
+            public int compare(Map.Entry<String, Integer> o1, Map.Entry<String, Integer> o2) {
+                return o2.getValue().compareTo(o1.getValue());
+            }
+        };
+        Collections.sort(list,comparator);
+        Map<String, Integer> result = new LinkedHashMap<>();
+        for (Map.Entry<String, Integer> entry : list) {
+            result.put(entry.getKey(), entry.getValue());
+        }
+        //sorted.putAll(termsMapPerDocument);
+        TreeMap<String, Integer> topFiveEntities = new TreeMap<>();
+        for (Map.Entry<String, Integer> entry : result.entrySet()) {
+            if (entry.getKey().length() > 0 && Character.isUpperCase(entry.getKey().charAt(0))) {
+                topFiveEntities.put(entry.getKey().toUpperCase(), entry.getValue());
+                if (topFiveEntities.size() == 5)
+                    break;
+            }
+        }
+        list = new ArrayList<>(topFiveEntities.entrySet());
+        Comparator <Map.Entry<String,Integer>> comparator1 = new Comparator<Map.Entry<String, Integer>>() {
+            @Override
+            public int compare(Map.Entry<String, Integer> o1, Map.Entry<String, Integer> o2) {
+                return o2.getValue().compareTo(o1.getValue());
+            }
+        };
+        Collections.sort(list,comparator1);
+        LinkedHashMap<String, Integer> sortedTopFiveEntites = new LinkedHashMap<>();
+        for (Map.Entry<String, Integer> entry : list) {
+            sortedTopFiveEntites.put(entry.getKey(), entry.getValue());
+        }
+        ReadFile.mapOfDocs.get(docId).setTopFiveEntities(sortedTopFiveEntites);
     }
 
     /**
@@ -199,7 +238,7 @@ public class Indexer {
      * Then check if the same word exist both in lower and upper case posing files
      * Then divide the posing files to posting files for each letter and for each number
      */
-    public void createInvertedIndex() throws InterruptedException {
+    public void createInvertedIndex() {
         mergePostingFile();
         Thread thread = new Thread(new Runnable() {
             @Override
@@ -223,10 +262,15 @@ public class Indexer {
             }
         });
         thread2.start();
-        thread.join();
+        try {
+            thread.join();
+        } catch (InterruptedException e) { }
         thread1.start();
-        thread1.join();
-        thread2.join();
+        try {
+            thread1.join();
+            thread2.join();
+        } catch (InterruptedException e) { }
+
         //dividePostingFileNumbers();
         Thread thread3 = new Thread(new Runnable() {
             @Override
@@ -244,14 +288,32 @@ public class Indexer {
         //createCityInvertedIndex();
         thread3.start();
         thread4.start();
-        thread3.join();
-        thread4.join();
+        try {
+            thread3.join();
+            thread4.join();
+        } catch (InterruptedException e) { }
         ReadFile.mapOfDocs.clear();
         ReadFile.stopWords.clear();
+        createDocumentDetailsFile();
 
 
 
     }
+
+    /**
+     * This method create file to save the number of document in the corpus and their average length
+     */
+    private void createDocumentDetailsFile() {
+        try {
+            FileWriter writer = new FileWriter(pathToSaveIndex + "\\DetailsForRank.txt");
+            long averageLengthOfDocuments = totalLength/Parse.numberOfDocuments;
+            writer.write(Parse.numberOfDocuments + "," + averageLengthOfDocuments);
+            writer.flush();
+            writer.close();
+        } catch (IOException e) { }
+
+    }
+
     /**
      * This method write the content of the read file document map to the disk each 5000 documents
      * doc details written to file in this format:
@@ -264,22 +326,21 @@ public class Indexer {
                 file.createNewFile();
             BufferedWriter writer = new BufferedWriter(new FileWriter(file,true));
             for (Map.Entry<String,DocumentDetails> entry : ReadFile.mapOfDocs.entrySet()){
-                // docId,fileName,language,date,numberOfDistinctWords,max term frequency,{term1:tf1,term2:tf2,...,term5:tf5,}
-                writer.write(entry.getKey() + "," + entry.getValue().fileName + "," +
+                // docId, length, fileName,language,date,numberOfDistinctWords,max term frequency,{term1:tf1,term2:tf2,...,term5:tf5,}
+                writer.write(entry.getKey() + "," + entry.getValue().getLength() + "," + entry.getValue().getFileName() + "," +
                         entry.getValue().getLanguage() + "," + entry.getValue().getDate() + "," +
                         entry.getValue().getNumberOfDistinctWords() + "," + entry.getValue().getMaxTermFrequency() + ",");
-                writer.write("{");
-                for (Map.Entry<Integer,String> entry1:entry.getValue().getTopFiveEntities().entrySet()){
-                    writer.write(entry1.getValue() + ":" + entry1.getKey() + ",");
+                //writer.write("{");
+                for (Map.Entry<String,Integer> entry1:entry.getValue().getTopFiveEntities().entrySet()){
+                    writer.write(entry1.getKey() + ":" + entry1.getValue() + ",");
                 }
-                writer.write("}");
+                totalLength+=entry.getValue().getLength();
+//                writer.write("}");
                 writer.write("\n");
             }
             writer.flush();
             writer.close();
-        }catch (IOException e) {
-            e.printStackTrace();
-        }
+        }catch (IOException e) { }
         ReadFile.mapOfDocs = new HashMap<>();
     }
 
@@ -324,7 +385,7 @@ public class Indexer {
             writerUpper.close();
             writerLower.close();
 
-        }catch (Exception e){}
+        }catch (Exception e){ }
     }
 
     /**
@@ -338,12 +399,10 @@ public class Indexer {
             writer.write(key + " ");
             for (PostingDetails postingDetails: entry) {
                 // write doc detailed for each document in the format: doc_Id, TF
-                writer.write("<" + postingDetails.getDocId() + " " + postingDetails.getTF() + ">");
+                writer.write("<" + postingDetails.getDocId() + "," + postingDetails.getTF() + ">");
             }
             writer.write("\n");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        } catch (IOException e) { }
     }
 
     /**
@@ -365,7 +424,7 @@ public class Indexer {
             }
             writer.flush();
             writer.close();
-        }catch (Exception e) {}
+        }catch (Exception e) { }
 
     }
 
@@ -434,9 +493,7 @@ public class Indexer {
             threadPoolExecutor.execute(new RunnableMerge(postingCity,pathToSaveIndex + "\\mergePostingCities.txt"));
             threadPoolExecutor.shutdown();
             while (threadPoolExecutor.getActiveCount() != 0);
-        } catch (Exception e) {
-
-        }
+        } catch (Exception e) { }
 
     }
 
@@ -473,9 +530,7 @@ public class Indexer {
             writer.flush();
             writer.close();
             postingFile.delete();
-        } catch (IOException e) {
-
-        }
+        } catch (IOException e) { }
     }
 
 
@@ -547,9 +602,7 @@ public class Indexer {
             file = new File(pathToSaveIndex + "\\mergePostingLowerCase.txt");
             file.delete();
 
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        } catch (IOException e) { }
     }
 
 
@@ -601,9 +654,7 @@ public class Indexer {
             writer.close();
             bf.close();
             numbers.delete();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        } catch (IOException e) { }
 
 
     }
@@ -678,9 +729,7 @@ public class Indexer {
             bfUpper.close();
             newLower.delete();
             newUpper.delete();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        } catch (IOException e) { }
     }
 
 
@@ -697,9 +746,7 @@ public class Indexer {
             fileWriter.close();
             numberOfTerms = dictionary.size();
             dictionary.clear();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        } catch (IOException e) { }
 
     }
 
@@ -738,7 +785,7 @@ public class Indexer {
             bf.close();
             postingCity.delete();
             citiesDictionary.clear();
-        }catch (IOException e){}
+        }catch (IOException e) {}
     }
 
 
@@ -781,24 +828,27 @@ public class Indexer {
      *
      * @return the dictionary in a string format:  term, number of appearance, row number in the posting file
      */
-    private void dictionaryToText(FileWriter fileWriter) throws IOException {
+    private void dictionaryToText(FileWriter fileWriter) {
         File file = new File(pathToSaveIndex + "\\dictionaryToDisplay.txt");
-        FileWriter writer = new FileWriter(file);
-        StringBuilder ans = new StringBuilder(" ");
-        TreeMap <String,TermDetails> map = new TreeMap<>(dictionary);
-        for (Map.Entry<String,TermDetails> entry: map.entrySet()){
-            if (entry.getValue().getPtr() == 0){
-                synchronized (dictionary) {
-                    dictionary.remove(entry.getKey());
+        FileWriter writer = null;
+        try {
+            writer = new FileWriter(file);
+            StringBuilder ans = new StringBuilder(" ");
+            TreeMap <String,TermDetails> map = new TreeMap<>(dictionary);
+            for (Map.Entry<String,TermDetails> entry: map.entrySet()){
+                if (entry.getValue().getPtr() == 0){
+                    synchronized (dictionary) {
+                        dictionary.remove(entry.getKey());
+                    }
+                    continue;
                 }
-                continue;
+                // term,number of appearance,line number
+                fileWriter.write(entry.getKey() + "," + entry.getValue().getTotalTF() + "," + entry.getValue().getDocumentFrequency() + "," + entry.getValue().getPtr() +  "\n");
+                writer.write(entry.getKey() + "," + entry.getValue().getTotalTF() + "\n");
             }
-            // term,number of appearance,line number
-            fileWriter.write(entry.getKey() + "," + entry.getValue().getTotalTF() + "," + entry.getValue().getDocumentFrequency() + "," + entry.getValue().getPtr() +  "\n");
-            writer.write(entry.getKey() + "," + entry.getValue().getTotalTF() + "\n");
-        }
-        writer.flush();
-        writer.close();
+            writer.flush();
+            writer.close();
+        } catch (IOException e) { }
     }
 
 
@@ -818,9 +868,7 @@ public class Indexer {
             }
             br.close();
             return list;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        } catch (IOException e) { }
         return null;
     }
     /**

@@ -4,8 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.TreeSet;
+import java.util.*;
 
 public class Engine {
 
@@ -13,28 +12,52 @@ public class Engine {
     private ReadFile readFile;
     private Parse parse;
     private Indexer indexer;
-    private HashMap<String,TermDetails> dictionary;// <Term, df, totalTF, ptr>
-    private String pathToSaveIndex;
+    private Searcher searcher;
+    private Boolean isStemming;
+    public static HashMap<String,TermDetails> dictionary;// <Term, df, totalTF, ptr>
+    public static HashMap<String,DocumentDetails> mapOfDocs = new HashMap<>();
+    public static String pathToSaveIndex;
 
+    public Engine() {
+        this.parse = new Parse(false,null);
+        searcher = new Searcher(parse);
+    }
 
-
-
-    public Engine(String pathToParse,String pathToSaveIndex,  boolean isStemming) {
-        this.pathToSaveIndex = pathToSaveIndex;
+    /**
+     *
+     * @param pathToParse - path of the corpus
+     * @param pathToSaveIndex - path where to save the index files
+     * @param isStemming - boolean indicating if need to to stem or not
+     */
+    public void setParameters(String pathToParse, String pathToSaveIndex, boolean isStemming) {
+        Engine.pathToSaveIndex = pathToSaveIndex;
+        this.isStemming = isStemming;
         indexer = new Indexer(pathToSaveIndex,isStemming);
-        parse = new Parse(isStemming,indexer);
+        parse.setStemming(isStemming);
+        parse.setIndexer(indexer);
         readFile = new ReadFile(pathToParse,parse);
     }
 
-    public void start() throws Exception {
+    /**
+     * This method start the building of the inverted index
+     */
+    public void start() {
+        try {
             readFile.startReading();
             // write last data to disk
             indexer.writeDataToDisk();
             // creating inverted index
             indexer.createInvertedIndex();
+            //setPathToSaveIndex(pathToSaveIndex);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 
-
+    /**
+     * This method delete all the files created during the process
+     */
     public void reset() {
         indexer.reset();
     }
@@ -42,8 +65,9 @@ public class Engine {
     /**
      * This method write to content of the file 'Dictionary.txt' to the Dictionary field
      */
-    public void setDictionary(){
+    public boolean setDictionary(){
         dictionary = new HashMap<>();
+        if (!checkValidPath()) return false;
         try{
             File dictionaryFile = new File(pathToSaveIndex + "\\Dictionary.txt");
             BufferedReader bf = new BufferedReader(new FileReader(dictionaryFile));
@@ -57,7 +81,19 @@ public class Engine {
                 line = bf.readLine();
             }
             bf.close();
+            // load the document hash map to memory as well
+            setDocumentDetails();
+            // load stop word hash map to memory as well
+            setStopWords();
         } catch (IOException e) { }
+        return true;
+    }
+
+    public boolean checkValidPath() {
+        File directory = new File(pathToSaveIndex);
+        if (!directory.exists())
+            return false;
+        return true;
     }
 
     public int getNumberOfDocuments(){
@@ -70,6 +106,19 @@ public class Engine {
 
     public TreeSet<String> dictionaryToString() {
         return indexer.dictionaryToString();
+    }
+
+    public TreeMap<Integer, Vector<String>> searchSingleQuery(String query, HashSet<String> cities,boolean isSemantic){
+        return searcher.processQuery(query,cities,isSemantic);
+    }
+
+    /**
+     * @param query
+     * @param cities
+     * @return all the documents which are relevant to the queries inside the query file
+     */
+    public TreeMap<Integer, Vector<String>> searchMultipleQueries(File query, HashSet<String> cities, boolean isSemantic){
+        return searcher.processQuery(query,cities,isSemantic);
     }
 
     public HashMap<String, TermDetails> getDictionary() {
@@ -98,5 +147,75 @@ public class Engine {
 
 
 
+    public void setPathToSaveIndex(String absolutePath) {
+        if (!isStemming)
+            Engine.pathToSaveIndex = absolutePath + "\\posting";
+        else
+            Engine.pathToSaveIndex = absolutePath + "\\stemmingPosting";
+    }
 
+
+    public void setStemming(Boolean stemming) {
+        isStemming = stemming;
+        parse.setStemming(stemming);
+    }
+
+    /**
+     *
+     * @return all the cities which founded between the tag < f p=104></>
+     */
+    public TreeSet<String> readDocumentsCities() {
+        TreeSet cities = new TreeSet();
+        try{
+            File dictionaryFile = new File(pathToSaveIndex + "\\cityDictionary.txt");
+            BufferedReader bf = new BufferedReader(new FileReader(dictionaryFile));
+            String line = bf.readLine();
+            while (line != null){
+                String city = line.substring(0,line.indexOf(","));
+                cities.add(city);
+                line = bf.readLine();
+            }
+            bf.close();
+        } catch (IOException e) { }
+        return cities;
+    }
+
+    /**
+     * This method upload the document details file to the memory
+     */
+    public void setDocumentDetails(){
+        try{
+            File dictionaryFile = new File(pathToSaveIndex + "\\documentsDetails.txt");
+            BufferedReader bf = new BufferedReader(new FileReader(dictionaryFile));
+            String line = bf.readLine();
+            while (line != null){
+                // docId, length, fileName,language,date,numberOfDistinctWords,max term frequency,{term1:tf1,term2:tf2,...,term5:tf5,}
+                String [] details = line.split(",");
+                DocumentDetails documentDetails = new DocumentDetails(details[2],details[4],details[3]);
+                documentDetails.setLength(Integer.valueOf(details[1]));
+                documentDetails.setNumberOfDistinctWords(Integer.valueOf(details[5]));
+                documentDetails.setMaxTermFrequency(Integer.valueOf(details[6]));
+                LinkedHashMap<String,Integer> topFiveEntities = new LinkedHashMap<>();
+                for (int i = 7; i < 12 && i < details.length; i++) {
+                    String [] entite = details[i].split(":");
+                    if (entite.length != 2) continue;
+                    topFiveEntities.put(entite[0],Integer.valueOf(entite[1]));
+                }
+                documentDetails.setTopFiveEntities(topFiveEntities);
+                mapOfDocs.put(details[0], documentDetails);
+                line = bf.readLine();
+            }
+            bf.close();
+        } catch (IOException e) { }
+    }
+
+    private void setStopWords() throws IOException {
+        File file = new File(pathToSaveIndex + "/stop_words.txt");
+        BufferedReader bf = new BufferedReader(new FileReader(file));
+        String line = bf.readLine();
+        while (line != null) {
+            ReadFile.stopWords.add(line);
+            line = bf.readLine();
+        }
+    }
 }

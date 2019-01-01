@@ -28,24 +28,6 @@ public class DictionaryDisplay extends View {
      * sets the dictionary content in the right place in the stage
      */
     public void setText(){
-/*        //if(controller.dictionaryToString()!=null) {
-//        TreeSet <String> dictionary = controller.dictionaryToString();
-//        ObservableList<String> dictionaryObservable = FXCollections.observableArrayList(dictionary);
-        StringBuilder ans = new StringBuilder("");
-        try{
-            File dictionaryFile = new File(Indexer.pathToSaveIndex + "\\dictionaryToDisplay.txt");
-            BufferedReader bf = new BufferedReader(new FileReader(dictionaryFile));
-            String line = bf.readLine();
-            while (line != null){
-                //lv_dictionaryDisplay.getItems().add(line.substring(0,details[0]) + details[1] + "\n");
-                lv_dictionaryDisplay.getItems().add(line);
-                line = bf.readLine();
-            }
-            bf.close();
-        } catch (IOException e) { }
-        //lv_dictionaryDisplay.setItems(dictionaryObservable);
-            //setText(controller.dictionaryToString());
-        //}*/
         TreeSet<String> dictionary = controller.dictionaryToString();
         ObservableList<String> dictionaryObservable = FXCollections.observableArrayList(dictionary);
         for(String str : dictionaryObservable )
