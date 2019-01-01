@@ -97,6 +97,7 @@ public class ReadFile{
         }
         stopWordsFile.flush();
         stopWordsFile.close();
+        bf.close();
     }
     /**
      * This method run recursively over the given folder

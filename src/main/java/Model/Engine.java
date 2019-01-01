@@ -30,8 +30,8 @@ public class Engine {
      * @param isStemming - boolean indicating if need to to stem or not
      */
     public void setParameters(String pathToParse, String pathToSaveIndex, boolean isStemming) {
-        Engine.pathToSaveIndex = pathToSaveIndex;
         this.isStemming = isStemming;
+        setPathToSaveIndex(pathToSaveIndex);
         indexer = new Indexer(pathToSaveIndex,isStemming);
         parse.setStemming(isStemming);
         parse.setIndexer(indexer);

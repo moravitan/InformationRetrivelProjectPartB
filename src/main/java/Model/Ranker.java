@@ -14,6 +14,7 @@ public class Ranker {
     private HashMap<String, ArrayList<TermRankDetails>> posting; // <docId, term,tf>
     private HashSet<String> notRelevantDocments; // <docId, term,tf>
     private TreeMap<String,Double> ranksPerDocument; // <docId,rank>
+    private  int i;
 
 
     /**
@@ -23,12 +24,13 @@ public class Ranker {
      * @param cities
      * @param queryId
      */
-    public void rank(HashMap<String,Integer> termsForQueries, HashMap<String,Integer> termsNotRelevant, HashSet<String> cities, String queryId){
+    public void rank(HashMap<String,Integer> termsForQueries ,HashMap<String,Integer> termsNotRelevant, HashSet<String> cities, String queryId){
         this.posting = new HashMap<>();
         this.ranksPerDocument = new TreeMap<>();
         if(cities.size() > 0)
             getCitiesDocuments(cities);
-        getNotRelevantDocument(termsNotRelevant);
+/*        if (termsNotRelevant != null)
+            getNotRelevantDocument(termsForQueries,termsNotRelevant);*/
         getTermsPosting(termsForQueries);
         try {
             BufferedReader bf = new BufferedReader(new FileReader(Engine.pathToSaveIndex + "\\DetailsForRank.txt"));
@@ -114,8 +116,13 @@ public class Ranker {
         }
     }
 
-    private void getNotRelevantDocument(HashMap<String, Integer> termsNotRelevant) {
+    private void getNotRelevantDocument(HashMap<String,Integer> termsForQuery, HashMap<String, Integer> termsNotRelevant) {
         notRelevantDocments = new HashSet<>();
+        for (Map.Entry<String,Integer> entry: termsForQuery.entrySet()){
+            if (termsNotRelevant.containsKey(entry.getKey())){
+                termsNotRelevant.remove(entry.getKey());
+            }
+        }
         try {
             for (Map.Entry<String, Integer> entry : termsNotRelevant.entrySet()) {
                 int ptr = 0;
@@ -183,7 +190,7 @@ public class Ranker {
                         while (line.length() > 0){
                             // get the doc id
                             String docId = StringUtils.substringBetween(line,"<",",");
-                            if ((cityDocuments == null || cityDocuments.contains(docId)) && !notRelevantDocments.contains(docId)){
+                            if ((cityDocuments == null || cityDocuments.contains(docId)) /*&& !notRelevantDocments.contains(docId)*/){
                                 // get the tf of the term in the document
                                 String tf = StringUtils.substringBetween(line,",",">");
                                 int numberTF = Integer.valueOf(tf);
