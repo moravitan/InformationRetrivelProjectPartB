@@ -42,7 +42,7 @@ public class Searcher {
           query = handleSemantic(query);
         parse.parsing("111",query,false);
         this.query = parse.getTermsMapPerDocument();
-        ranker.rank(this.query, cities, "111");
+        ranker.rank(this.query,null, cities, "111");
         this.isSemantic = isSemantic;
         return result;
     }
