@@ -172,109 +172,109 @@ public class Searcher {
 
     private static String parseNarr(String narr){
         String ans = "";
-        //if ________ not relevant.
-        if(narr.contains("not relevant.") ){
-            int notRelIndex = narr.indexOf("not relevant.");
-            if(notRelIndex!=-1){
-                narr= narr.substring(0,notRelIndex+12);
-                int dotIndex = narr.lastIndexOf(".");
-                if(dotIndex!=-1)
-                    return(narr.substring(dotIndex+1, notRelIndex-1).trim());
-                else{
-                    return(narr.substring(0, notRelIndex-1).trim());
+        try {
+            //if ________ not relevant.
+            if (narr.contains("not relevant.")) {
+                int notRelIndex = narr.indexOf("not relevant.");
+                if (notRelIndex != -1) {
+                    narr = narr.substring(0, notRelIndex + 12);
+                    int dotIndex = narr.lastIndexOf(".");
+                    if (dotIndex != -1)
+                        return (narr.substring(dotIndex + 1, notRelIndex - 1).trim());
+                    else {
+                        return (narr.substring(0, notRelIndex - 1).trim());
+                    }
                 }
             }
-        }
-        //if not relevant: _______
-        if(narr.contains("not relevant:")){
-            int notRelIndex = narr.indexOf("not relevant:");
-            narr= narr.substring(notRelIndex+13).trim();
-            //index of '('
-            int openIndex = narr.indexOf('(');
-            if(openIndex!=-1){
-                /// index of ')'
-                int closeIndex= narr.indexOf(')');
-                if(closeIndex!=-1){
-                    String before = narr.substring(0,openIndex-1);
-                    String after = narr.substring(closeIndex+1);
-                    return before+ " " + after;
+            //if not relevant: _______
+            if (narr.contains("not relevant:")) {
+                int notRelIndex = narr.indexOf("not relevant:");
+                narr = narr.substring(notRelIndex + 13).trim();
+                //index of '('
+                int openIndex = narr.indexOf('(');
+                if (openIndex != -1) {
+                    /// index of ')'
+                    int closeIndex = narr.indexOf(')');
+                    if (closeIndex != -1) {
+                        String before = narr.substring(0, openIndex - 1);
+                        String after = narr.substring(closeIndex + 1);
+                        return before + " " + after;
+                    }
                 }
+
+                int dotaimIndex = narr.lastIndexOf(":");
+                return (narr.substring(dotaimIndex + 1));
             }
 
-            int dotaimIndex = narr.lastIndexOf(":");
-            return(narr.substring(dotaimIndex+1));
-        }
-
-        //if ________ not relevant.
-        if(narr.contains("non-relevant.") ){
-            int nonRelIndex = narr.indexOf("non-relevant.");
-            if(nonRelIndex!=-1){
-                narr= narr.substring(0,nonRelIndex+12);
-                int dotIndex = narr.lastIndexOf(".");
-                if(dotIndex!=-1)
-                    return(narr.substring(dotIndex+1, nonRelIndex-1).trim());
-                else{
-                    return(narr.substring(0, nonRelIndex-1).trim());
+            //if ________ not relevant.
+            if (narr.contains("non-relevant.")) {
+                int nonRelIndex = narr.indexOf("non-relevant.");
+                if (nonRelIndex != -1) {
+                    narr = narr.substring(0, nonRelIndex + 12);
+                    int dotIndex = narr.lastIndexOf(".");
+                    if (dotIndex != -1)
+                        return (narr.substring(dotIndex + 1, nonRelIndex - 1).trim());
+                    else {
+                        return (narr.substring(0, nonRelIndex - 1).trim());
+                    }
                 }
             }
-        }
-        //if not relevant: _______
-        if(narr.contains("non-relevant:")){
-            int nonRelIndex = narr.indexOf("non-relevant:");
-            narr= narr.substring(nonRelIndex+13).trim();
-            //index of '('
-            int openIndex = narr.indexOf('(');
-            if(openIndex!=-1){
-                /// index of ')'
-                int closeIndex= narr.indexOf(')');
-                if(closeIndex!=-1){
-                    String before = narr.substring(0,openIndex-1);
-                    String after = narr.substring(closeIndex+1);
-                    return before+ " " + after;
+            //if not relevant: _______
+            if (narr.contains("non-relevant:")) {
+                int nonRelIndex = narr.indexOf("non-relevant:");
+                narr = narr.substring(nonRelIndex + 13).trim();
+                //index of '('
+                int openIndex = narr.indexOf('(');
+                if (openIndex != -1) {
+                    /// index of ')'
+                    int closeIndex = narr.indexOf(')');
+                    if (closeIndex != -1) {
+                        String before = narr.substring(0, openIndex - 1);
+                        String after = narr.substring(closeIndex + 1);
+                        return before + " " + after;
+                    }
                 }
+
+                int dotaimIndex = narr.lastIndexOf(":");
+                return (narr.substring(dotaimIndex + 1));
             }
 
-            int dotaimIndex = narr.lastIndexOf(":");
-            return(narr.substring(dotaimIndex+1));
-        }
-
-        //if ________ not relevant.
-        if(narr.contains("not relevant,") ){
-            int notRelIndex = narr.indexOf("not relevant,");
-            if(notRelIndex!=-1){
-                narr= narr.substring(0,notRelIndex+12);
-                int dotIndex = narr.lastIndexOf(".");
-                if(dotIndex!=-1)
-                    return(narr.substring(dotIndex+1, notRelIndex-1).trim());
-                else{
-                    return(narr.substring(0, notRelIndex-1).trim());
+            //if ________ not relevant.
+            if (narr.contains("not relevant,")) {
+                int notRelIndex = narr.indexOf("not relevant,");
+                if (notRelIndex != -1) {
+                    narr = narr.substring(0, notRelIndex + 12);
+                    int dotIndex = narr.lastIndexOf(".");
+                    if (dotIndex != -1)
+                        return (narr.substring(dotIndex + 1, notRelIndex - 1).trim());
+                    else {
+                        return (narr.substring(0, notRelIndex - 1).trim());
+                    }
                 }
             }
-        }
-        //if not relevant ___________.
-        if(narr.contains("non-relevant")){
-            int nonRelIndex = narr.indexOf("non-relevant");
-            if((narr.charAt(nonRelIndex+12)==',' || narr.charAt(nonRelIndex+12)=='.')){
-                return "";
+            //if not relevant ___________.
+            if (narr.contains("non-relevant")) {
+                int nonRelIndex = narr.indexOf("non-relevant");
+                if ((narr.charAt(nonRelIndex + 12) == ',' || narr.charAt(nonRelIndex + 12) == '.')) {
+                    return "";
+                } else {
+                    narr = narr.substring(nonRelIndex);
+                    int dotIndex = narr.indexOf('.');
+                    return narr.substring(nonRelIndex + 12, dotIndex);
+                }
             }
-            else{
-                narr = narr.substring(nonRelIndex);
-                int dotIndex = narr.indexOf('.');
-                return narr.substring(nonRelIndex+12 , dotIndex);
+            //if not relevant ___________.
+            if (narr.contains("not relevant")) {
+                int notRelIndex = narr.indexOf("not relevant");
+                if ((narr.charAt(notRelIndex + 12) == ',' || narr.charAt(notRelIndex + 12) == '.')) {
+                    return "";
+                } else {
+                    narr = narr.substring(notRelIndex);
+                    int dotIndex = narr.indexOf('.');
+                    return narr.substring(notRelIndex + 12, dotIndex);
+                }
             }
-        }
-        //if not relevant ___________.
-        if(narr.contains("not relevant")){
-            int notRelIndex = narr.indexOf("not relevant");
-            if((narr.charAt(notRelIndex+12)==',' || narr.charAt(notRelIndex+12)=='.')){
-                return "";
-            }
-            else{
-                narr = narr.substring(notRelIndex);
-                int dotIndex = narr.indexOf('.');
-                return narr.substring(notRelIndex+12 , dotIndex);
-            }
-        }
+        }catch (Exception e) { }
         return ans;
     }
 
