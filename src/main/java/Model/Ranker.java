@@ -111,9 +111,7 @@ public class Ranker {
                 line = bf.readLine();
                 lineNumber++;
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        } catch (Exception e) { }
     }
 
     private void getNotRelevantDocument(HashMap<String,Integer> termsForQuery, HashMap<String, Integer> termsNotRelevant) {
@@ -157,9 +155,7 @@ public class Ranker {
 
             }
         }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
+        catch (Exception e) { }
 
     }
 
@@ -214,9 +210,7 @@ public class Ranker {
 
             }
         }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
+        catch (IOException e) { }
     }
 
     /**

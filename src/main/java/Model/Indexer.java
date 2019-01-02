@@ -310,7 +310,7 @@ public class Indexer {
             writer.write(Parse.numberOfDocuments + "," + averageLengthOfDocuments);
             writer.flush();
             writer.close();
-        } catch (IOException e) { }
+        } catch (Exception e) { }
 
     }
 
@@ -340,7 +340,7 @@ public class Indexer {
             }
             writer.flush();
             writer.close();
-        }catch (IOException e) { }
+        }catch (Exception e) { }
         ReadFile.mapOfDocs = new HashMap<>();
     }
 
@@ -402,7 +402,7 @@ public class Indexer {
                 writer.write("<" + postingDetails.getDocId() + "," + postingDetails.getTF() + ">");
             }
             writer.write("\n");
-        } catch (IOException e) { }
+        } catch (Exception e) { }
     }
 
     /**
@@ -452,7 +452,7 @@ public class Indexer {
                 public void run() {
                     try {
                         ExternalSort.mergeSortedFiles(numbersPosting, postingNumbersFile, cmp, Charset.defaultCharset(), false);
-                    } catch (IOException e) { }
+                    } catch (Exception e) { }
                 }
             });
             Thread t2 = new Thread(new Runnable() {
@@ -460,7 +460,7 @@ public class Indexer {
                 public void run() {
                     try {
                         ExternalSort.mergeSortedFiles(lowerPosting, postingLowerFile, cmp, Charset.defaultCharset(), false);
-                    } catch (IOException e) { }
+                    } catch (Exception e) { }
                 }
             });
             Thread t3 = new Thread(new Runnable() {
@@ -468,7 +468,7 @@ public class Indexer {
                 public void run() {
                     try {
                         ExternalSort.mergeSortedFiles(upperPosting, postingUpperFile, cmp, Charset.defaultCharset(), false);
-                    } catch (IOException e) { }
+                    } catch (Exception e) { }
                 }
             });
             Thread t4 = new Thread(new Runnable() {
@@ -476,7 +476,7 @@ public class Indexer {
                 public void run() {
                     try {
                         ExternalSort.mergeSortedFiles(cityPosting, postingCity, cmp, Charset.defaultCharset(), false);
-                    } catch (IOException e) { }
+                    } catch (Exception e) { }
                 }
             });
             t1.start();
@@ -530,7 +530,7 @@ public class Indexer {
             writer.flush();
             writer.close();
             postingFile.delete();
-        } catch (IOException e) { }
+        } catch (Exception e) { }
     }
 
 
@@ -602,7 +602,7 @@ public class Indexer {
             file = new File(pathToSaveIndex + "\\mergePostingLowerCase.txt");
             file.delete();
 
-        } catch (IOException e) { }
+        } catch (Exception e) { }
     }
 
 
@@ -654,7 +654,7 @@ public class Indexer {
             writer.close();
             bf.close();
             numbers.delete();
-        } catch (IOException e) { }
+        } catch (Exception e) { }
 
 
     }
@@ -729,7 +729,7 @@ public class Indexer {
             bfUpper.close();
             newLower.delete();
             newUpper.delete();
-        } catch (IOException e) { }
+        } catch (Exception e) { }
     }
 
 
@@ -746,7 +746,7 @@ public class Indexer {
             fileWriter.close();
             numberOfTerms = dictionary.size();
             dictionary.clear();
-        } catch (IOException e) { }
+        } catch (Exception e) { }
 
     }
 
@@ -785,7 +785,7 @@ public class Indexer {
             bf.close();
             postingCity.delete();
             citiesDictionary.clear();
-        }catch (IOException e) {}
+        }catch (Exception e) {}
     }
 
 
@@ -848,7 +848,7 @@ public class Indexer {
             }
             writer.flush();
             writer.close();
-        } catch (IOException e) { }
+        } catch (Exception e) { }
     }
 
 
@@ -868,7 +868,7 @@ public class Indexer {
             }
             br.close();
             return list;
-        } catch (IOException e) { }
+        } catch (Exception e) { }
         return null;
     }
     /**

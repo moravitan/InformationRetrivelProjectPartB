@@ -59,12 +59,13 @@ public class testMor {
     public static void testQueries(){
         HashSet<String> cities = new HashSet<>();
         Engine engine = new Engine();
-        engine.setStemming(false);
+        engine.setStemming(true);
         engine.setPathToSaveIndex("C:\\Users\\איתן אביטן\\Downloads\\לימודים\\אחזור מידע\\פרויקט מנוע חיפוש\\indexer");
         engine.setDictionary();
        // engine.readDocumentsCities();
-        engine.searchMultipleQueries(new File("C:\\Users\\איתן אביטן\\Downloads\\לימודים\\אחזור מידע\\פרויקט מנוע חיפוש\\queries.txt"),cities,false);
+        engine.searchMultipleQueries(new File("C:\\Users\\איתן אביטן\\Downloads\\לימודים\\אחזור מידע\\פרויקט מנוע חיפוש\\queries.txt"),cities,true);
         setResult();
+        //saveQueryResultToFile("");
     }
 
     private static void setResult() {
@@ -93,6 +94,23 @@ public class testMor {
             }
         }
         System.out.println("Number of total matches : " + totalCounter);
+    }
+
+    public static void saveQueryResultToFile(String path){
+        try {
+            FileWriter fileForTrecEval = new FileWriter (new File(path + "\\fileForTrecEval.txt"));
+            for(Map.Entry<Integer,Vector<String>> entry: Searcher.result.entrySet()){
+                String queryId = String.valueOf(entry.getKey());
+                Vector<String> resultsForQuery = entry.getValue();
+                for (String docId: resultsForQuery){
+                    fileForTrecEval.write(queryId + " 0 " + docId + " 0 0.0 mt" + "\n");
+                }
+            }
+            fileForTrecEval.flush();
+            fileForTrecEval.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
     }
 }

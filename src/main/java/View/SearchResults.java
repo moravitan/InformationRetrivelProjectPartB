@@ -6,10 +6,7 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ChoiceBox;
-import javafx.scene.control.ListView;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 
@@ -17,10 +14,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.TreeMap;
-import java.util.Vector;
+import java.util.*;
 
 public class SearchResults  extends View{
 
@@ -31,6 +25,8 @@ public class SearchResults  extends View{
     public ListView<String> entites;
     public ChoiceBox queryId;
     public TextField pathToSaveQueryResults;
+    public Label score;
+    private String docId;
 
 
     public void setController(Controller controller, Stage primaryStage) {
@@ -66,6 +62,16 @@ public class SearchResults  extends View{
                 }
             }
         });
+        entites.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
+            if (newSelection != null) {
+                System.out.println(docId);
+                LinkedHashMap<String,Integer> entites = Engine.mapOfDocs.get(docId).getTopFiveEntities();
+                score.setText(String.valueOf((double) entites.get(newSelection) / Engine.mapOfDocs.get(docId).getLength()));
+
+
+
+            }
+        });
     }
 
     private void setResult() {
@@ -91,9 +97,7 @@ public class SearchResults  extends View{
                 }
                 System.out.println("Number of matches for query: " + entry.getKey() + " " + counter) ;
                 counter = 0;
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            } catch (Exception e) { }
         }
         System.out.println("Number of total matches : " + totalCounter);
 
@@ -107,9 +111,7 @@ public class SearchResults  extends View{
             if (selectedFile != null) {
                 pathToSaveQueryResults.setText(selectedFile.getAbsolutePath());
             }
-        }catch (Exception e){
-            e.getStackTrace();
-        }
+        }catch (Exception e){ }
 
     }
 

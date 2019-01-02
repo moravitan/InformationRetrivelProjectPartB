@@ -59,8 +59,7 @@ public class OperatingWindow extends View{
                 }
             }
         }
-        catch(
-                IllegalArgumentException e)
+        catch(IllegalArgumentException e)
         {
             throw e;
         }

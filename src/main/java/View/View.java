@@ -112,7 +112,7 @@ public class View implements Observer {
             if (result.size() == 0)
                 alert("Sorry, but we couldn't find results for your search", Alert.AlertType.INFORMATION);
             else
-                newStage("SearchResults.fxml", "", searchResults, 388, 416, controller);
+                newStage("SearchResults.fxml", "", searchResults, 458, 454, controller);
         }
     }
 
@@ -129,7 +129,7 @@ public class View implements Observer {
             if (result.size() == 0)
                 alert("Sorry, but we couldn't find results for your search", Alert.AlertType.INFORMATION);
             else
-                newStage("SearchResults.fxml", "", searchResults, 388, 416, controller);
+                newStage("SearchResults.fxml", "", searchResults, 458, 454, controller);
 
         }
     }
