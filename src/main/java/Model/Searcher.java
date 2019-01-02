@@ -15,7 +15,6 @@ public class Searcher {
     Ranker ranker;
     Parse parse;
     HashMap<String,Integer> query;
-    HashMap<String,Integer> notRelevant;
     HashSet<String> cities;
     static TreeMap<Integer, Vector<String>> result;
     boolean isSemantic;
@@ -42,7 +41,7 @@ public class Searcher {
           query = handleSemantic(query);
         parse.parsing("111",query,false);
         this.query = parse.getTermsMapPerDocument();
-        ranker.rank(this.query,null, cities, "111");
+        ranker.rank(this.query, cities, "111");
         this.isSemantic = isSemantic;
         return result;
     }
@@ -92,7 +91,7 @@ public class Searcher {
                     //get for each query vector of docs from posting
                     query = parse.getTermsMapPerDocument();
                     //rank the docs from returned vector
-                    ranker.rank(query,notRelevant,cities, id);
+                    ranker.rank(query,cities, id);
                     id = "";
                     queryContent = "";
                     descContent = "";
@@ -117,6 +116,7 @@ public class Searcher {
         for (int i = 0; i <queryWords.length ; i++) {
             String APIQuery = queryWords[i];
             int indexOfMakaf = APIQuery.indexOf('-');
+            //if there is terms in query type of: term.1-term.2-..-term.n does semantic on the two words together
             if(indexOfMakaf!=-1)
                 APIQuery = APIQuery.replaceAll("-", "+");
             try{
@@ -129,6 +129,7 @@ public class Searcher {
                 while(line!=null){
                     int wordCounter =0;
                     while(line.length()>0){
+                        //takes two-tree semantic terms for each term from query
                         if(wordCounter >= 2)
                             break;
                         String APIterm = StringUtils.substringBetween(line,"\"word\":\"","\",\"score\"");
@@ -143,7 +144,6 @@ public class Searcher {
                         }
                         if (!APIwords.contains(APIterm)) {
                             APIwords.add(APIterm);
-                            //querySB.append(StringUtils.substringBetween(line,"\"word\":\"","\",\"score\"")+ " ");
                             wordCounter++;
                         }
                         int index = line.indexOf('}');
@@ -164,116 +164,5 @@ public class Searcher {
             querySB.deleteCharAt(querySB.length()-1);
         return querySB.toString();
     }
-
-
-    private static String parseNarr(String narr){
-        String ans = "";
-        try {
-            //if ________ not relevant.
-            if (narr.contains("not relevant.")) {
-                int notRelIndex = narr.indexOf("not relevant.");
-                if (notRelIndex != -1) {
-                    narr = narr.substring(0, notRelIndex + 12);
-                    int dotIndex = narr.lastIndexOf(".");
-                    if (dotIndex != -1)
-                        return (narr.substring(dotIndex + 1, notRelIndex - 1).trim());
-                    else {
-                        return (narr.substring(0, notRelIndex - 1).trim());
-                    }
-                }
-            }
-            //if not relevant: _______
-            if (narr.contains("not relevant:")) {
-                int notRelIndex = narr.indexOf("not relevant:");
-                narr = narr.substring(notRelIndex + 13).trim();
-                //index of '('
-                int openIndex = narr.indexOf('(');
-                if (openIndex != -1) {
-                    /// index of ')'
-                    int closeIndex = narr.indexOf(')');
-                    if (closeIndex != -1) {
-                        String before = narr.substring(0, openIndex - 1);
-                        String after = narr.substring(closeIndex + 1);
-                        return before + " " + after;
-                    }
-                }
-
-                int dotaimIndex = narr.lastIndexOf(":");
-                return (narr.substring(dotaimIndex + 1));
-            }
-
-            //if ________ not relevant.
-            if (narr.contains("non-relevant.")) {
-                int nonRelIndex = narr.indexOf("non-relevant.");
-                if (nonRelIndex != -1) {
-                    narr = narr.substring(0, nonRelIndex + 12);
-                    int dotIndex = narr.lastIndexOf(".");
-                    if (dotIndex != -1)
-                        return (narr.substring(dotIndex + 1, nonRelIndex - 1).trim());
-                    else {
-                        return (narr.substring(0, nonRelIndex - 1).trim());
-                    }
-                }
-            }
-            //if not relevant: _______
-            if (narr.contains("non-relevant:")) {
-                int nonRelIndex = narr.indexOf("non-relevant:");
-                narr = narr.substring(nonRelIndex + 13).trim();
-                //index of '('
-                int openIndex = narr.indexOf('(');
-                if (openIndex != -1) {
-                    /// index of ')'
-                    int closeIndex = narr.indexOf(')');
-                    if (closeIndex != -1) {
-                        String before = narr.substring(0, openIndex - 1);
-                        String after = narr.substring(closeIndex + 1);
-                        return before + " " + after;
-                    }
-                }
-
-                int dotaimIndex = narr.lastIndexOf(":");
-                return (narr.substring(dotaimIndex + 1));
-            }
-
-            //if ________ not relevant.
-            if (narr.contains("not relevant,")) {
-                int notRelIndex = narr.indexOf("not relevant,");
-                if (notRelIndex != -1) {
-                    narr = narr.substring(0, notRelIndex + 12);
-                    int dotIndex = narr.lastIndexOf(".");
-                    if (dotIndex != -1)
-                        return (narr.substring(dotIndex + 1, notRelIndex - 1).trim());
-                    else {
-                        return (narr.substring(0, notRelIndex - 1).trim());
-                    }
-                }
-            }
-            //if not relevant ___________.
-            if (narr.contains("non-relevant")) {
-                int nonRelIndex = narr.indexOf("non-relevant");
-                if ((narr.charAt(nonRelIndex + 12) == ',' || narr.charAt(nonRelIndex + 12) == '.')) {
-                    return "";
-                } else {
-                    narr = narr.substring(nonRelIndex);
-                    int dotIndex = narr.indexOf('.');
-                    return narr.substring(nonRelIndex + 12, dotIndex);
-                }
-            }
-            //if not relevant ___________.
-            if (narr.contains("not relevant")) {
-                int notRelIndex = narr.indexOf("not relevant");
-                if ((narr.charAt(notRelIndex + 12) == ',' || narr.charAt(notRelIndex + 12) == '.')) {
-                    return "";
-                } else {
-                    narr = narr.substring(notRelIndex);
-                    int dotIndex = narr.indexOf('.');
-                    return narr.substring(notRelIndex + 12, dotIndex);
-                }
-            }
-        }catch (Exception e) { }
-        return ans;
-    }
-
-
 
 }
