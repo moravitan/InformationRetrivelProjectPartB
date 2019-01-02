@@ -14,11 +14,6 @@ public class Parse {
     boolean isStemming;
     Stemmer stemmer;
     HashMap <String, Integer> termsMapPerDocument; // <Term, TF>
-    // CHANGED HERE
-    //TreeMap<String,Integer> topFiveEntities; // <tf, Term>
-    //String minFrequncyTerm = "";
-    //int minFrequency = 1;
-    ///////////////
     HashMap<String, ArrayList<Integer>> citiesMap; // <CityName, listOfPositions>
     HashMap<String,String> monthDictionary;
     HashMap<String,String> numbersDictionary;
@@ -39,7 +34,6 @@ public class Parse {
     // docId of the current doc being parsed.
     String docId;
 
-    public static int numCounter = 0;
 
 
     /**
@@ -144,63 +138,55 @@ public class Parse {
 
     /**
      * This function get a doc from the ReadFile class and parsing it line by line
-     * @param docId
-     * @param docText
+     * @param id
+     * @param text
      */
-    public void parsing(String docId, String docText, boolean isCorpus){
-        this.docId = docId;
+    public void parsing(String id, String text, boolean isCorpus){
+        this.docId = id;
         if (isCorpus){
             numberOfDocuments++;
             // break the text line by line
             BreakIterator iterator = BreakIterator.getSentenceInstance(Locale.US);
             // get the text between the tags <TEXT> </TEXT>
-            Document document = Jsoup.parse(docText);
-            String text = document.getElementsByTag("TEXT").text();
-            iterator.setText(text);
+            Document document = Jsoup.parse(text);
+            String textBetweenTags = document.getElementsByTag("TEXT").text();
+            iterator.setText(textBetweenTags);
             int start = iterator.first();
             for (int end = iterator.next();
                  end != BreakIterator.DONE;
                  start = end, end = iterator.next()) {
                 try{
-                    parsingLine(text.substring(start,end));
+                    parsingLine(textBetweenTags.substring(start,end));
                 }
                 catch (Exception e){ }
 
             }
             // update and reset all the parameters of the current document
-            ReadFile.mapOfDocs.get(docId).setMaxTermFrequency(maxTermFrequency);
-            ReadFile.mapOfDocs.get(docId).setNumberOfDistinctWords(numberOfDistinctWords);
-            ReadFile.mapOfDocs.get(docId).setLength(length);
-            ////////CHANGED HERE
-            //ReadFile.mapOfDocs.get(docId).setTopFiveEntities(topFiveEntities);
-            /////////////
-            indexer.setAll(docId, termsMapPerDocument, citiesMap);
+            ReadFile.mapOfDocs.get(id).setMaxTermFrequency(maxTermFrequency);
+            ReadFile.mapOfDocs.get(id).setNumberOfDistinctWords(numberOfDistinctWords);
+            ReadFile.mapOfDocs.get(id).setLength(length);
+            indexer.setAll(id, termsMapPerDocument, citiesMap);
             maxTermFrequency = 0;
             numberOfDistinctWords = 0;
             position = -1;
             length = 0;
             termsMapPerDocument = new HashMap<>();
             citiesMap = new HashMap<>();
-            //topFiveEntities = new TreeMap<>();
         }
         else{
             termsMapPerDocument = new HashMap<>();
-            parsingLine(docText);
+            parsingLine(text);
         }
     }
 
 
     /**
      * This function get a document line from the parsing() function, and parsing it.
-     * @param docLine
+     * @param textLine
      */
-    private void parsingLine(String docLine){
+    private void parsingLine(String textLine){
         String punctuations = ",.";
-        //split all words by whitespace into array of words
-        //docLine = docLine.replaceAll("[():?!]","");
-        //Check if function splitByDelimiter is better
-        //String [] wordsInDoc = docLine.trim().split("\\s+");
-        String[] wordsInDoc = splitByDelimiter(docLine, ' ');
+        String[] wordsInDoc = splitByDelimiter(textLine, ' ');
         //if more than one line, contains "" at wordInDoc[wordInDoc.length -1]
         //find where is the dot closing the sentence and remove it
         if (wordsInDoc.length == 1) {
@@ -284,18 +270,10 @@ public class Parse {
 
                 //WORD starts with LOWER and exist in dic with UPPER, update dic with LOWER CASE of WORD and update key to LOWER
                 if (!Character.isUpperCase(wordsInDoc[i].charAt(0)) && termsMapPerDocument.containsKey(wordsInDoc[i].toUpperCase())) {
-//                    updateTerm(wordsInDoc[i]);
-//                    termsMapPerDocument.get(wordsInDoc[i]).putAll(termsMapPerDocument.get(wordsInDoc[i].toUpperCase()));
                     int currentNumOfAppearance = termsMapPerDocument.get(wordsInDoc[i].toUpperCase());
                     termsMapPerDocument.put(wordsInDoc[i].toLowerCase(),currentNumOfAppearance + 1);
                     termsMapPerDocument.remove(wordsInDoc[i].toUpperCase());
                     length++;
-//                    if (termsMapPerDocument.get(wordsInDoc[i]).containsKey(documentDetails))
-//                        currentNumOfAppearance = (termsMapPerDocument.get(wordsInDoc[i])).get(documentDetails);
-//                    if (currentNumOfAppearance > maxTermFrequency)
-//                        maxTermFrequency = currentNumOfAppearance;
-//                    (termsMapPerDocument.get(wordsInDoc[i])).put(documentDetails, currentNumOfAppearance + 1);
-//                    termsMapPerDocument.remove(wordsInDoc[i].toUpperCase());
                     continue;
                 }
 
@@ -651,11 +629,6 @@ public class Parse {
                         continue;
                     }
                 }
-
-/*                wordsInDoc[i] = wordsInDoc[i].replaceAll("[^a-zA-Z]", "");
-                if (wordsInDoc[i].length() == 0)
-                    continue;*/
-
             }
 
         }
@@ -747,15 +720,6 @@ public class Parse {
                 return new StringBuilder(tmpNum);
             }
 
-            //if smaller than million
-/*            if (!isPrice && tmpNum.length() < 5){
-                finalTerm.append(numberTerm.elementAt(0));
-                if (priceTermSize == 2) {
-                    finalTerm.append(weightDictionary.get(numberTerm.elementAt(1).toString()));
-                }
-
-                break;
-            }*/
             if (tmpNum.length() < 7 || dotIndex == 4) {
                 if(isPrice)
                     finalTerm.append(numberTerm.elementAt(0)).append(" Dollars");
@@ -977,19 +941,19 @@ public class Parse {
      * create term if not exist, update the dictionary of docs
      * @param key - the countryName of city under tag <F P=104>
      */
-    private void updateTerm(String key){
+    private void updateTerm(String key) {
         length++;
         if (isStemming)
             key = stemmer.setTerm(key);
         //check if term not exist in dictionary , add key to TreeMapDic and create it's dic of docs
-        if(!termsMapPerDocument.containsKey(key)){
-            termsMapPerDocument.put(key,1);
+        if (!termsMapPerDocument.containsKey(key)) {
+            termsMapPerDocument.put(key, 1);
             numberOfDistinctWords = numberOfDistinctWords + 1;
             // if the key is city countryName, save the position of the key in the file
             //key exist , update value.
         } else {
             int currentNumOfAppearance = termsMapPerDocument.get(key);
-            termsMapPerDocument.put(key,currentNumOfAppearance + 1);
+            termsMapPerDocument.put(key, currentNumOfAppearance + 1);
             // find the max frequency in each doc
             if (currentNumOfAppearance + 1 > maxTermFrequency)
                 maxTermFrequency = currentNumOfAppearance;
@@ -1003,41 +967,8 @@ public class Parse {
                 citiesMap.get(key.toUpperCase()).add(position);
             }
         }
-/*        if (Character.isUpperCase(key.charAt(0)))
-            setTopFiveEntities(key.toUpperCase(),termsMapPerDocument.get(key));*/
     }
 
-    /**
-     * This method save the top five terms which appear in upper case and their tf
-     * @param
-     * @param
-     */
- /*   private void setTopFiveEntities(String term,int tf) {
-        if (topFiveEntities.size() < 5) {
-            topFiveEntities.put(term, tf);
-            if (tf <= minFrequency) {
-                minFrequncyTerm = term;
-                minFrequency = tf;
-            }
-            return;
-        }
-        if (tf <= minFrequency)
-            return;
-        if (topFiveEntities.containsKey(term)){
-            topFiveEntities.put(term,tf);
-            return;
-        }
-        TreeMap<String,Integer> sorted = new TreeMap<>(new Comparator<String>() {
-            @Override
-            public int compare(String o1, String o2) {
-                return topFiveEntities.get(o1).compareTo(topFiveEntities.get(o2));
-            }
-        });
-        sorted.putAll(topFiveEntities);
-        minFrequency = sorted.get(sorted.firstKey());
-        topFiveEntities.remove(sorted.firstKey());
-        topFiveEntities.put(term, tf);
-    }*/
 
     public void setStemming(boolean stemming) {
         isStemming = stemming;
