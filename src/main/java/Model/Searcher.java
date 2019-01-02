@@ -22,7 +22,7 @@ public class Searcher {
 
     /**
      * constructor
-     * @param parse
+     * @param parse - parser of the program
      */
     public Searcher(Parse parse) {
         this.parse = parse;
@@ -30,9 +30,9 @@ public class Searcher {
     }
 
     /**
-     *
-     * @param query
-     * @param cities
+     *  return a Tree Map of <queryId, vector of relevant documents>
+     * @param query - given single query
+     * @param cities - set of all cities in corpus under <F P=104>  </F> tag
      */
     public TreeMap<Integer, Vector<String>> processQuery(String query, HashSet<String> cities, boolean isSemantic){
         this.cities=cities;
@@ -48,9 +48,9 @@ public class Searcher {
     }
 
     /**
-     *
-     * @param file
-     * @param cities
+     *  return a Tree Map of <queryId, vector of relevant documents>
+     * @param file - file of queries
+     * @param cities - set of all cities in corpus under <F P=104>  </F> tag
      */
     public TreeMap<Integer, Vector<String>> processQuery(File file, HashSet<String> cities,boolean isSemantic){
         this.cities=cities;
@@ -61,14 +61,16 @@ public class Searcher {
             String id="";
             String queryContent="";
             String descContent = "";
-            String narrContent = "";
             while ((st = br.readLine()) != null ){
+                //catch query id
                 if (st.contains("<num> Number:")) {
                     id = st.substring(14, 17);
                 }
+                //catch query content
                 if (st.contains("<title> ")){
                     queryContent = st.substring(8).replaceAll("\\s+$","");
                 }
+                //catch query description
                 if (st.contains("<desc> ")){
                     st= br.readLine();
                     descContent = st;
@@ -79,41 +81,35 @@ public class Searcher {
                     }
                     descContent = descContent.replaceAll("\\s+$","");
                 }
-                if (st.contains("<narr>")){
-                    st= br.readLine();
-                    narrContent = st;
-                    st = br.readLine();
-                    while(!st.contains("</top>")){
-                        narrContent =  narrContent +" "+ st;
-                        st = br.readLine();
-                    }
-
-                }
 
                 if (!id.equals("") && !descContent.equals("")) {
+                   //doing semantic operation on original query terms
                     if(isSemantic)
-                       queryContent =  handleSemantic(queryContent);
+                       queryContent = handleSemantic(queryContent);
+                    //parse original query terms, semantic terms, description terms
                     queryContent = queryContent + " " + descContent;
                     parse.parsing(id, queryContent, false);
+                    //get for each query vector of docs from posting
                     query = parse.getTermsMapPerDocument();
-                    String parsedNarr = parseNarr(narrContent);
-                    parse.parsing(id, parsedNarr, false);
-                    notRelevant= parse.getTermsMapPerDocument();
+                    //rank the docs from returned vector
                     ranker.rank(query,notRelevant,cities, id);
                     id = "";
                     queryContent = "";
                     descContent = "";
-                    narrContent = "";
                 }
 
             }
-        } catch (IOException e){
-            System.out.println(e.getMessage());
+        } catch (Exception e){
+
         }
         return result;
     }
 
-
+    /**
+     * return string of original query terms + 2-3 semantic terms for each term in query
+     * @param query - given query
+     * @return
+     */
     private static String handleSemantic(String query){
         String [] queryWords = query.split(" ");
         HashSet<String> APIwords = new HashSet<>();
@@ -133,7 +129,7 @@ public class Searcher {
                 while(line!=null){
                     int wordCounter =0;
                     while(line.length()>0){
-                        if(wordCounter==5)
+                        if(wordCounter >= 2)
                             break;
                         String APIterm = StringUtils.substringBetween(line,"\"word\":\"","\",\"score\"");
                         int indexOfWhitespace = APIterm.indexOf(' ');
