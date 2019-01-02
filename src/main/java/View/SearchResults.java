@@ -72,7 +72,7 @@ public class SearchResults  extends View{
         entites.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
             if (newSelection != null) {
                 LinkedHashMap<String,Integer> entites = Engine.mapOfDocs.get(docId).getTopFiveEntities();
-                score.setText(String.valueOf((double) entites.get(newSelection) / Engine.mapOfDocs.get(docId).getLength()));
+                score.setText(String.valueOf((double) (entites.get(newSelection) / Engine.mapOfDocs.get(docId).getLength()) * 100));
 
 
 

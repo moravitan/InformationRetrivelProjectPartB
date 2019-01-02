@@ -65,7 +65,7 @@ public class testMor {
        // engine.readDocumentsCities();
         engine.searchMultipleQueries(new File("C:\\Users\\איתן אביטן\\Downloads\\לימודים\\אחזור מידע\\פרויקט מנוע חיפוש\\queries.txt"),cities,true);
         setResult();
-        //saveQueryResultToFile("");
+        saveQueryResultToFile("C:\\Users\\איתן אביטן\\Downloads\\לימודים\\אחזור מידע\\פרויקט מנוע חיפוש\\treceval\\StemmingSemantic.txt");
     }
 
     private static void setResult() {
@@ -98,7 +98,7 @@ public class testMor {
 
     public static void saveQueryResultToFile(String path){
         try {
-            FileWriter fileForTrecEval = new FileWriter (new File(path + "\\fileForTrecEval.txt"));
+            FileWriter fileForTrecEval = new FileWriter (new File(path));
             for(Map.Entry<Integer,Vector<String>> entry: Searcher.result.entrySet()){
                 String queryId = String.valueOf(entry.getKey());
                 Vector<String> resultsForQuery = entry.getValue();
