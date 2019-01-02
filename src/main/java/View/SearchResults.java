@@ -37,10 +37,14 @@ public class SearchResults  extends View{
 
     }
 
+    /**
+     * this function set the results of the query in a list view
+     */
     private void setQueryId(){
         for(Map.Entry<Integer,Vector<String>> entry: View.result.entrySet()){
             queryId.getItems().add(entry.getKey());
         }
+        // if a query is selected, show all the relevant document
         queryId.getSelectionModel().selectedIndexProperty().addListener(new ChangeListener<Number>() {
             @Override
             public void changed(ObservableValue<? extends Number> observableValue, Number number, Number number2) {
@@ -52,6 +56,8 @@ public class SearchResults  extends View{
                 }
             }
         });
+
+        // if a document is selected, show all it's entities
         resultList.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
             if (newSelection != null) {
                 this.entites.getItems().clear();
@@ -62,6 +68,7 @@ public class SearchResults  extends View{
                 docId = newSelection;
             }
         });
+        // if an entitie is selected show it's score
         entites.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
             if (newSelection != null) {
                 LinkedHashMap<String,Integer> entites = Engine.mapOfDocs.get(docId).getTopFiveEntities();
@@ -102,6 +109,7 @@ public class SearchResults  extends View{
 
     }
 
+
     public void loadPath(){
         try {
             DirectoryChooser fileChooser = new DirectoryChooser();
@@ -114,6 +122,9 @@ public class SearchResults  extends View{
 
     }
 
+    /**
+     * This function save the result of the query to a chosen file by the user
+     */
     public void saveQueryResultToFile(){
         if (pathToSaveQueryResults.getText() == null || pathToSaveQueryResults.getText().trim().isEmpty())
             alert("You did not enter any path", Alert.AlertType.ERROR);
