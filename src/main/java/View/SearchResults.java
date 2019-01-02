@@ -13,7 +13,6 @@ import javafx.stage.Stage;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.io.IOException;
 import java.util.*;
 
 public class SearchResults  extends View{
@@ -60,11 +59,11 @@ public class SearchResults  extends View{
                 for(String str : entites) {
                     this.entites.getItems().add(str);
                 }
+                docId = newSelection;
             }
         });
         entites.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
             if (newSelection != null) {
-                System.out.println(docId);
                 LinkedHashMap<String,Integer> entites = Engine.mapOfDocs.get(docId).getTopFiveEntities();
                 score.setText(String.valueOf((double) entites.get(newSelection) / Engine.mapOfDocs.get(docId).getLength()));
 

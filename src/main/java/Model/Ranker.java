@@ -24,13 +24,11 @@ public class Ranker {
      * @param cities
      * @param queryId
      */
-    public void rank(HashMap<String,Integer> termsForQueries ,HashMap<String,Integer> termsNotRelevant, HashSet<String> cities, String queryId){
+    public void rank(HashMap<String,Integer> termsForQueries, HashSet<String> cities, String queryId){
         this.posting = new HashMap<>();
         this.ranksPerDocument = new TreeMap<>();
         if(cities.size() > 0)
             getCitiesDocuments(cities);
-/*        if (termsNotRelevant != null)
-            getNotRelevantDocument(termsForQueries,termsNotRelevant);*/
         getTermsPosting(termsForQueries);
         try {
             BufferedReader bf = new BufferedReader(new FileReader(Engine.pathToSaveIndex + "\\DetailsForRank.txt"));
@@ -40,7 +38,7 @@ public class Ranker {
             int averageLength = Integer.valueOf(lineDetails[1]);
             bf.close();
             calculateBM25(termsForQueries,numberOfDocuments,averageLength);
-            //calculateInnerProduct();
+            calculateInnerProduct();
             List<Map.Entry<String, Double>> list = new ArrayList<>(ranksPerDocument.entrySet());
             Comparator <Map.Entry<String,Double>> comparator = new Comparator<Map.Entry<String, Double>>() {
                 @Override
@@ -114,50 +112,6 @@ public class Ranker {
         } catch (Exception e) { }
     }
 
-    private void getNotRelevantDocument(HashMap<String,Integer> termsForQuery, HashMap<String, Integer> termsNotRelevant) {
-        notRelevantDocments = new HashSet<>();
-        for (Map.Entry<String,Integer> entry: termsForQuery.entrySet()){
-            if (termsNotRelevant.containsKey(entry.getKey())){
-                termsNotRelevant.remove(entry.getKey());
-            }
-        }
-        try {
-            for (Map.Entry<String, Integer> entry : termsNotRelevant.entrySet()) {
-                int ptr = 0;
-                String key = entry.getKey();
-                if(Engine.dictionary.containsKey(entry.getKey().toUpperCase())) {
-                    ptr = Engine.dictionary.get(entry.getKey().toUpperCase()).getPtr();
-                    key = key.toUpperCase();
-                }
-                else if (Engine.dictionary.containsKey(entry.getKey().toLowerCase())) {
-                    ptr = Engine.dictionary.get(entry.getKey().toLowerCase()).getPtr();
-                    key = key.toLowerCase();
-                }
-                else continue;
-                char c = Character.toUpperCase(entry.getKey().charAt(0));
-                BufferedReader bf = new BufferedReader(new FileReader(Engine.pathToSaveIndex + "\\posting" + c + ".txt"));
-                String line = bf.readLine();
-                int lineNumber = 1;
-                while(true){
-                    if (lineNumber == ptr){
-                        while (line.length() > 0){
-                            // get the doc id
-                            String docId = StringUtils.substringBetween(line,"<",",");
-                            notRelevantDocments.add(docId);
-                            line = line.substring(line.indexOf(">") + 1).trim();
-                        }
-                        bf.close();
-                        break;
-                    }
-                    line = bf.readLine();
-                    lineNumber++;
-                }
-
-            }
-        }
-        catch (Exception e) { }
-
-    }
 
     /**
      * This method retrieve all the documents which contains at least one of the terms inside @param termsForQueries
